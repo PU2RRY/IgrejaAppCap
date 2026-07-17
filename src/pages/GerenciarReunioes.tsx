@@ -101,7 +101,7 @@ export default function GerenciarReunioes() {
 
   return (
     <div className="pb-16 min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="bg-indigo-600 px-5 pt-10 pb-4 flex items-center gap-3">
+      <div className="bg-gray-900 dark:bg-black px-5 pt-10 pb-4 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="text-white text-xl">←</button>
         <h1 className="text-white text-xl font-bold">Gerenciar Reuniões</h1>
       </div>

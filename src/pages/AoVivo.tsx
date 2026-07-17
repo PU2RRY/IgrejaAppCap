@@ -22,7 +22,7 @@ export default function AoVivo() {
 
   return (
     <div className="pb-16 min-h-screen bg-black flex flex-col">
-      <div className="bg-indigo-600 px-5 pt-10 pb-4">
+      <div className="bg-gray-900 dark:bg-black px-5 pt-10 pb-4">
         <h1 className="text-white text-2xl font-bold">📡 Culto ao Vivo</h1>
       </div>
 

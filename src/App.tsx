@@ -19,6 +19,7 @@ import Noticia   from "./pages/Noticia"
 import AoVivo    from "./pages/AoVivo"
 import Midia     from "./pages/Midia"
 import Igreja    from "./pages/Igreja"
+import Horarios  from "./pages/Horarios"
 import Perfil    from "./pages/Perfil"
 import Notificacoes from "./pages/Notificacoes"
 import MinhasEscalas from "./pages/MinhasEscalas"
@@ -30,10 +31,14 @@ import GerenciarReunioes from "./pages/GerenciarReunioes"
 import TrocarSenha from "./pages/TrocarSenha"
 import MinhaCelula from "./pages/MinhaCelula"
 import GerenciarCelulas from "./pages/GerenciarCelulas"
+import Eventos from "./pages/Eventos"
+import EventoDetalhe from "./pages/EventoDetalhe"
+import GerenciarPresencaEvento from "./pages/GerenciarPresencaEvento"
+import BemEstar from "./pages/BemEstar"
 
 const queryClient = new QueryClient()
 
-const ROTAS_LIVRES_VISITANTE = ["/home", "/ao-vivo", "/midia"]
+const ROTAS_LIVRES_VISITANTE = ["/home", "/ao-vivo", "/midia", "/eventos"]
 
 function AppRoutes() {
   const { user, loading } = useAuth()
@@ -60,7 +65,7 @@ function AppRoutes() {
 
   useEffect(() => {
     if (!user || !isVisitante) return
-    const permitido = ROTAS_LIVRES_VISITANTE.includes(location.pathname) || location.pathname.startsWith("/noticia/")
+    const permitido = ROTAS_LIVRES_VISITANTE.includes(location.pathname) || location.pathname.startsWith("/noticia/") || location.pathname.startsWith("/eventos/")
     if (!permitido) navigate("/home", { replace: true })
   }, [user, isVisitante, location.pathname, navigate])
 
@@ -87,11 +92,16 @@ function AppRoutes() {
           <Route path="/ao-vivo"     element={<AppShell><AoVivo /> <TabBar /></AppShell>} />
           <Route path="/midia"       element={<AppShell><Midia />  <TabBar /></AppShell>} />
           <Route path="/igreja"      element={<AppShell><Igreja /> <TabBar /></AppShell>} />
+          <Route path="/eventos"     element={<AppShell><Eventos /> <TabBar /></AppShell>} />
+          <Route path="/eventos/:id" element={<AppShell><EventoDetalhe /></AppShell>} />
+          <Route path="/eventos/gerenciar-presenca" element={<AppShell><GerenciarPresencaEvento /></AppShell>} />
+          <Route path="/horarios"    element={<AppShell><Horarios /> <TabBar /></AppShell>} />
           <Route path="/perfil"         element={<AppShell><Perfil /> <TabBar /></AppShell>} />
           <Route path="/notificacoes"   element={<AppShell><Notificacoes /></AppShell>} />
           <Route path="/escalas"           element={<AppShell><MinhasEscalas /></AppShell>} />
           <Route path="/escalas/gerenciar" element={<AppShell><GerenciarEscalas /></AppShell>} />
           <Route path="/oracao"   element={<AppShell><SolicitarOracao /></AppShell>} />
+          <Route path="/bem-estar" element={<AppShell><BemEstar /></AppShell>} />
           <Route path="/oracoes"  element={<AppShell><MinhasOracoes /></AppShell>} />
           <Route path="/reunioes"           element={<AppShell><MinhasReunioes /></AppShell>} />
           <Route path="/reunioes/gerenciar" element={<AppShell><GerenciarReunioes /></AppShell>} />

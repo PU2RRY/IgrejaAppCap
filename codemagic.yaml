@@ -1,0 +1,59 @@
+workflows:
+  ios-workflow:
+    name: iOS - Mix do Reino
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: mixdoreino_asc_key
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.mixdoreino.app
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        BUNDLE_ID: "com.mixdoreino.app"
+      node: 20
+      xcode: latest
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - name: Instalar dependências do app
+        script: npm ci
+
+      - name: Build do bundle web (React)
+        script: npm run build
+
+      - name: Sincronizar projeto iOS com o build web
+        script: npx cap sync ios
+
+      - name: Buscar certificado e perfil de provisionamento
+        script: |
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+
+      - name: Preparar keychain de assinatura
+        script: keychain initialize
+
+      - name: Aplicar perfis de provisionamento no projeto Xcode
+        script: xcode-project use-profiles
+
+      - name: Gerar o IPA assinado
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

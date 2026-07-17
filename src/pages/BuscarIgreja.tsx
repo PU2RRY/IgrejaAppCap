@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
 import { igrejasApi } from "../api"
+import { useFundoApp } from "../hooks/useFundoApp"
 
 interface Igreja { tenantId: string; nomeIgreja: string; cidade: string; uf: string; logoUrl?: string }
 
@@ -11,6 +12,7 @@ export default function BuscarIgreja() {
   const [search, setSearch] = useState("")
   const { setTenant } = useAuth()
   const navigate = useNavigate()
+  const fundo = useFundoApp()
 
   const { data, isLoading } = useQuery({
     queryKey: ["igrejas", search],
@@ -25,15 +27,21 @@ export default function BuscarIgreja() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
-      <div className="bg-indigo-600 text-white text-center py-10 px-4">
+    <div
+      className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col bg-cover bg-center"
+      style={fundo ? { backgroundImage: `url(${fundo})` } : undefined}
+    >
+      <div
+        className={`text-white text-center py-10 px-4 ${fundo ? "bg-black/40" : "bg-indigo-600"}`}
+        style={fundo ? { textShadow: "0 1px 4px rgba(0,0,0,0.6)" } : undefined}
+      >
         <h1 className="text-3xl font-bold">Mix do Reino</h1>
-        <p className="text-indigo-200 mt-1">Encontre sua igreja</p>
+        <p className={`mt-1 ${fundo ? "text-white/90" : "text-indigo-200"}`}>Encontre sua igreja</p>
       </div>
 
       <div className="p-4 flex gap-2">
         <input
-          className="flex-1 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-4 h-11 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 border border-gray-300 dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-4 h-11 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
           placeholder="Nome da igreja, cidade..."
           value={termo}
           onChange={e => setTermo(e.target.value)}
@@ -47,13 +55,22 @@ export default function BuscarIgreja() {
         </button>
       </div>
 
-      <div className="flex-1 px-4 space-y-3">
-        {isLoading && <p className="text-center text-gray-400 dark:text-gray-500 mt-8">Buscando...</p>}
+      <div className="flex-1 px-4 space-y-3 pb-6">
+        {isLoading && (
+          <p className={`text-center mt-8 ${fundo ? "text-white font-medium" : "text-gray-400 dark:text-gray-500"}`}
+             style={fundo ? { textShadow: "0 1px 4px rgba(0,0,0,0.6)" } : undefined}>
+            Buscando...
+          </p>
+        )}
         {data?.map(ig => (
           <button
             key={ig.tenantId}
             onClick={() => selecionar(ig)}
-            className="w-full flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-left shadow-sm"
+            className={`w-full flex items-center gap-3 border rounded-xl p-3 text-left shadow-sm ${
+              fundo
+                ? "bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm border-white/40 dark:border-gray-700/50"
+                : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+            }`}
           >
             {ig.logoUrl
               ? <img src={ig.logoUrl} className="w-12 h-12 rounded-lg object-cover" />
@@ -67,7 +84,10 @@ export default function BuscarIgreja() {
           </button>
         ))}
         {search.length >= 2 && !isLoading && !data?.length && (
-          <p className="text-center text-gray-400 dark:text-gray-500 mt-8">Nenhuma igreja encontrada.</p>
+          <p className={`text-center mt-8 ${fundo ? "text-white font-medium" : "text-gray-400 dark:text-gray-500"}`}
+             style={fundo ? { textShadow: "0 1px 4px rgba(0,0,0,0.6)" } : undefined}>
+            Nenhuma igreja encontrada.
+          </p>
         )}
       </div>
     </div>

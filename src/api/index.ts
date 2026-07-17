@@ -4,6 +4,10 @@ export const igrejasApi = {
   buscar: (termo?: string) => pub.get("/app/igrejas", { params: termo ? { termo } : {} }),
 }
 
+export const appConfigApi = {
+  obter: () => pub.get<{ fundoLoginUrl?: string | null }>("/public/app-config"),
+}
+
 export const appAuthApi = {
   registrar: (tenantId: string, data: { nome: string; email: string; senha: string; celular?: string; dataNascimento?: string; aceitouTermos: boolean }) =>
     pub.post(`/app/igrejas/${tenantId}/registrar`, data),
@@ -33,12 +37,10 @@ export const perfilApi = {
     api.put("/app/meu-perfil/senha", { senhaAtual, senhaNova }),
 }
 
-export const uploadApi = {
-  imagem: (arquivo: File) => {
-    const fd = new FormData()
-    fd.append("arquivo", arquivo)
-    return api.post("/upload/imagem", fd, { headers: { "Content-Type": "multipart/form-data" } })
-  },
+export const bemEstarApi = {
+  emocoes: () => api.get("/app/bem-estar/emocoes"),
+  status: () => api.get("/app/bem-estar/status"),
+  registrar: (emocao: string, nota?: string) => api.post("/app/bem-estar", { emocao, nota: nota || null }),
 }
 
 export const oracoesApi = {
@@ -81,6 +83,17 @@ export const celulasApi = {
   excluir: (id: number) => api.delete(`/app/celulas/${id}`),
   adicionarMembro: (id: number, idMembro: number) => api.post(`/app/celulas/${id}/membros`, { idMembro }),
   removerMembro: (id: number, idMembro: number) => api.delete(`/app/celulas/${id}/membros/${idMembro}`),
+}
+
+export const eventosApi = {
+  listar: () => api.get("/app/eventos"),
+  obter: (id: number) => api.get(`/app/eventos/${id}`),
+  inscrever: (id: number) => api.post(`/app/eventos/${id}/inscrever`),
+  cancelar: (id: number) => api.delete(`/app/eventos/${id}/inscrever`),
+  organizo: () => api.get("/app/eventos/organizo"),
+  listarInscricoes: (id: number) => api.get(`/app/eventos/${id}/inscricoes`),
+  atualizarPresenca: (id: number, idInscricao: number, presente: boolean) =>
+    api.put(`/app/eventos/${id}/inscricoes/${idInscricao}/presenca`, { presente }),
 }
 
 export const escalasApi = {

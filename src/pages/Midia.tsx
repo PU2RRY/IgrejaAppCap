@@ -12,10 +12,38 @@ function youtubeId(url: string) {
   return m ? m[1] : null
 }
 
+function spotifyEmbed(url: string) {
+  const m = url.match(/open\.spotify\.com\/(?:embed\/)?(track|episode|show|playlist|album|artist)\/([A-Za-z0-9]+)/)
+  if (!m) return null
+  const [, tipo, id] = m
+  const altura = tipo === "track" || tipo === "episode" ? 152 : 352
+  return { src: `https://open.spotify.com/embed/${tipo}/${id}`, altura }
+}
+
 function MidiaCard({ m }: { m: Midia }) {
   const [playing, setPlaying] = useState(false)
   const ytId = m.tipo === "YouTube" ? youtubeId(m.url) : null
+  const spotify = m.tipo === "Spotify" ? spotifyEmbed(m.url) : null
   const thumb = m.thumbnailUrl ?? (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null)
+
+  if (spotify) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 mb-3">
+        <iframe
+          src={spotify.src}
+          width="100%"
+          height={spotify.altura}
+          style={{ border: 0 }}
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+        />
+        <div className="px-3 pb-3 pt-2">
+          <p className="text-xs text-gray-400 dark:text-gray-500">{m.categoria}</p>
+          <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{m.titulo}</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 mb-3">
@@ -80,7 +108,7 @@ export default function Midia() {
 
   return (
     <div className="pb-16 dark:bg-gray-900 min-h-screen">
-      <div className="bg-indigo-600 px-5 pt-10 pb-4">
+      <div className="bg-gray-900 dark:bg-black px-5 pt-10 pb-4">
         <h1 className="text-white text-2xl font-bold">🎵 Áudio & Vídeo</h1>
       </div>
 

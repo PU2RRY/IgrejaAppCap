@@ -3,6 +3,22 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
 import { conteudoApi } from "../api"
 
+const URL_REGEX = /(https?:\/\/[^\s]+)/g
+
+// Divide o texto nos trechos que são link e devolve os links como <a> clicável,
+// preservando o resto do texto igual estava.
+function linkify(texto: string) {
+  return texto.split(URL_REGEX).map((parte, i) =>
+    /^https?:\/\//.test(parte) ? (
+      <a key={i} href={parte} target="_blank" rel="noreferrer" className="text-indigo-600 dark:text-indigo-400 underline break-all">
+        {parte}
+      </a>
+    ) : (
+      parte
+    )
+  )
+}
+
 export default function Noticia() {
   const { id } = useParams()
   const { tenantId } = useAuth()
@@ -26,7 +42,7 @@ export default function Noticia() {
         </p>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">{data?.titulo}</h1>
         {data?.subtitulo && <p className="text-gray-500 dark:text-gray-400 italic mb-4">{data.subtitulo}</p>}
-        <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{data?.conteudo}</p>
+        <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{data?.conteudo ? linkify(data.conteudo) : null}</p>
       </div>
     </div>
   )

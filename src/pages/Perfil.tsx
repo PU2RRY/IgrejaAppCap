@@ -1,7 +1,9 @@
+import { useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import { useAuth } from "../contexts/AuthContext"
 import { perfilApi } from "../api"
+import { uploadFotoCloudinary } from "../lib/cloudinary"
 
 const STATUS_COLOR: Record<string, string> = { Ativo: "#16A34A", Pendente: "#D97706", Bloqueado: "#DC2626" }
 
@@ -10,6 +12,7 @@ interface MeuPerfil {
   email: string
   celular?: string
   fotoUrl?: string
+  fotoEditavel: boolean
   status: string
   nomeMembro?: string
   tipoMembro?: string
@@ -32,11 +35,26 @@ function fmtData(s?: string) {
 export default function Perfil() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const qc = useQueryClient()
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const { data: perfil } = useQuery({
     queryKey: ["meu-perfil"],
     queryFn: () => perfilApi.meuPerfil().then(r => r.data as MeuPerfil),
   })
+
+  const atualizarFoto = useMutation({
+    mutationFn: async (file: File) => {
+      const url = await uploadFotoCloudinary(file)
+      await perfilApi.atualizarFoto(url)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["meu-perfil"] }),
+  })
+
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) atualizarFoto.mutate(file)
+  }
 
   const handleLogout = () => {
     if (confirm("Deseja sair da sua conta?")) { logout(); navigate("/") }
@@ -47,13 +65,22 @@ export default function Perfil() {
   return (
     <div className="pb-16">
       <div className="bg-indigo-600 flex flex-col items-center py-10 px-6">
-        {perfil?.fotoUrl ? (
-          <img src={perfil.fotoUrl} className="w-20 h-20 rounded-full object-cover mb-3 border-2 border-white" />
-        ) : (
-          <div className="w-20 h-20 rounded-full bg-indigo-500 flex items-center justify-center text-white text-4xl font-bold mb-3">
-            {user?.nome?.charAt(0).toUpperCase() ?? "?"}
-          </div>
-        )}
+        <button onClick={() => perfil?.fotoEditavel && fileRef.current?.click()}
+          className="relative mb-3" disabled={!perfil?.fotoEditavel}>
+          {perfil?.fotoUrl ? (
+            <img src={perfil.fotoUrl} className="w-20 h-20 rounded-full object-cover border-2 border-white" />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-indigo-500 flex items-center justify-center text-white text-4xl font-bold">
+              {user?.nome?.charAt(0).toUpperCase() ?? "?"}
+            </div>
+          )}
+          {perfil?.fotoEditavel && (
+            <span className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-white flex items-center justify-center text-indigo-600 text-xs shadow">
+              ✏️
+            </span>
+          )}
+        </button>
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
         <p className="text-white text-xl font-bold">{user?.nome}</p>
         <p className="text-indigo-200 text-sm mt-1">{user?.email}</p>
         <span className="mt-3 px-3 py-1 rounded-full text-xs font-bold"

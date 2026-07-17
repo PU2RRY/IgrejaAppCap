@@ -62,7 +62,7 @@ export default function MinhasOracoes() {
 
   return (
     <div className="pb-16 min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="bg-indigo-600 px-5 pt-4 pb-4 flex items-center justify-between">
+      <div className="bg-gray-900 dark:bg-black px-5 pt-4 pb-4 flex items-center justify-between">
         <h1 className="text-white text-xl font-bold">🙏 Orações</h1>
         <button onClick={() => navigate("/oracao")} className="bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full">
           + Novo Pedido
