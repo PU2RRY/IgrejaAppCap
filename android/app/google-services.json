@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "982054054751",
+    "project_id": "mix-do-reino",
+    "storage_bucket": "mix-do-reino.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:982054054751:android:8c1ba7a0fe19f8c19d64ea",
+        "android_client_info": {
+          "package_name": "com.mixdoreino.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEeMCHASOm4iliXlKC4HMvAeFsY0jg6EI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

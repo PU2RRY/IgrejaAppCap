@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mix do Reino</string>
+    <string name="title_activity_main">Mix do Reino</string>
+    <string name="package_name">com.mixdoreino.app</string>
+    <string name="custom_url_scheme">com.mixdoreino.app</string>
+</resources>
