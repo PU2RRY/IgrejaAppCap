@@ -19,7 +19,7 @@ workflows:
       events:
         - push
       branch_patterns:
-        - pattern: main
+        - pattern: master
           include: true
     scripts:
       - name: Instalar dependências do app
@@ -30,6 +30,20 @@ workflows:
 
       - name: Sincronizar projeto iOS com o build web
         script: npx cap sync ios
+
+      - name: Registrar GoogleService-Info.plist no projeto Xcode
+        script: |
+          gem install xcodeproj --no-document
+          ruby -e '
+            require "xcodeproj"
+            project = Xcodeproj::Project.open("ios/App/App.xcodeproj")
+            target = project.targets.first
+            group = project.main_group.find_subpath("App", true)
+            existing = group.files.find { |f| f.path == "GoogleService-Info.plist" }
+            file_ref = existing || group.new_reference("GoogleService-Info.plist")
+            target.add_resources([file_ref]) unless target.resources_build_phase.files_references.include?(file_ref)
+            project.save
+          '
 
       - name: Buscar certificado e perfil de provisionamento
         script: |
