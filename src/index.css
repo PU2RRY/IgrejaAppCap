@@ -4,3 +4,6 @@
 * { box-sizing: border-box; }
 body { margin: 0; font-family: system-ui, sans-serif; background: #F9FAFB; }
 .dark body { background: #0F172A; }
+
+/* Evita zoom automatico do iOS ao focar campos (exige fonte >= 16px), que fica preso apos o blur */
+input, select, textarea { font-size: 16px; }
