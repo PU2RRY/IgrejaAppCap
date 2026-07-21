@@ -49,9 +49,11 @@ workflows:
 
       - name: Buscar certificado e perfil de provisionamento
         script: |
+          echo "$CERTIFICATE_PRIVATE_KEY_B64" | base64 --decode > /tmp/distribution_key.pem
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            --certificate-key "@file:/tmp/distribution_key.pem"
 
       - name: Adicionar certificado ao keychain
         script: keychain add-certificates
