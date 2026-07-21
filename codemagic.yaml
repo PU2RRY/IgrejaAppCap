@@ -45,6 +45,13 @@ workflows:
       - name: Preparar keychain de assinatura
         script: keychain initialize
 
+      - name: Diagnóstico - listar certificados e opções do comando
+        script: |
+          echo "===== app-store-connect fetch-signing-files --help ====="
+          app-store-connect fetch-signing-files --help
+          echo "===== Certificados existentes na conta (via API) ====="
+          app-store-connect list-certificates || true
+
       - name: Buscar certificado e perfil de provisionamento
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
