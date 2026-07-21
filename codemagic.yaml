@@ -30,6 +30,11 @@ workflows:
       - name: Sincronizar projeto iOS com o build web
         script: npx cap sync ios
 
+      - name: Instalar CocoaPods
+        script: |
+          cd ios/App
+          pod install
+
       - name: Registrar GoogleService-Info.plist no projeto Xcode
         script: |
           gem install xcodeproj --no-document
