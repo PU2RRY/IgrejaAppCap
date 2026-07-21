@@ -44,6 +44,11 @@ workflows:
             project.save
           '
 
+      - name: Incrementar numero do build
+        script: |
+          cd ios/App
+          agvtool new-version -all "$CM_BUILD_NUMBER"
+
       - name: Preparar keychain de assinatura
         script: keychain initialize
 
