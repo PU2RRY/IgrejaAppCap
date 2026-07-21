@@ -9,7 +9,7 @@ workflows:
       groups:
         - ios_signing
       vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "com.mixdoreino.app"
       node: 22
@@ -29,11 +29,6 @@ workflows:
 
       - name: Sincronizar projeto iOS com o build web
         script: npx cap sync ios
-
-      - name: Instalar CocoaPods
-        script: |
-          cd ios/App
-          pod install
 
       - name: Registrar GoogleService-Info.plist no projeto Xcode
         script: |
@@ -69,7 +64,7 @@ workflows:
       - name: Gerar o IPA assinado
         script: |
           xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
+            --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME"
 
     artifacts:
