@@ -42,14 +42,17 @@ workflows:
             project.save
           '
 
+      - name: Preparar keychain de assinatura
+        script: keychain initialize
+
       - name: Buscar certificado e perfil de provisionamento
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
 
-      - name: Preparar keychain de assinatura
-        script: keychain initialize
+      - name: Adicionar certificado ao keychain
+        script: keychain add-certificates
 
       - name: Aplicar perfis de provisionamento no projeto Xcode
         script: xcode-project use-profiles
