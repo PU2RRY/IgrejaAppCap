@@ -41,7 +41,7 @@ export default function BuscarIgreja() {
 
       <div className="p-4 flex gap-2">
         <input
-          className="flex-1 border border-gray-300 dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-4 h-11 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 border border-gray-300 dark:border-gray-700 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 rounded-lg px-4 h-11 text-base outline-none focus:ring-2 focus:ring-indigo-500"
           placeholder="Nome da igreja, cidade..."
           value={termo}
           onChange={e => setTermo(e.target.value)}
