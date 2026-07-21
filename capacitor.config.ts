@@ -8,6 +8,7 @@ const config: CapacitorConfig = {
     allowMixedContent: true
   },
   server: {
+    hostname: 'mixdoreino.com.br',
     iosScheme: 'https',
     androidScheme: 'https'
   },
