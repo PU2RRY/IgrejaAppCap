@@ -20,7 +20,7 @@ workflows:
           include: true
     scripts:
       - name: Instalar dependências do app
-        script: npm ci
+        script: npm install
 
       - name: Build do bundle web (React)
         script: npm run build
