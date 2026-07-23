@@ -22,14 +22,19 @@ function youtubeCanalAoVivo(url: string) {
   return m ? m[1] : null
 }
 
-// Links de "embed" so funcionam dentro de um iframe. Abertos direto no navegador, o
-// YouTube recusa com "Erro 153" — convertemos pro link normal de assistir.
+const ORIGEM_EMBED = "https://mixdoreino.com.br"
+
+// Link normal (nao-embed) para abrir no navegador como alternativa.
 function linkParaAbrir(url: string) {
   const vid = youtubeId(url)
   if (vid) return `https://www.youtube.com/watch?v=${vid}`
   const canal = youtubeCanalAoVivo(url)
   if (canal) return `https://www.youtube.com/channel/${canal}/live`
   return urlAbsoluta(url)
+}
+
+function embedUrl(ytId: string) {
+  return `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&playsinline=1&origin=${encodeURIComponent(ORIGEM_EMBED)}`
 }
 
 function spotifyEmbed(url: string) {
@@ -41,6 +46,7 @@ function spotifyEmbed(url: string) {
 }
 
 function MidiaCard({ m }: { m: Midia }) {
+  const [playing, setPlaying] = useState(false)
   const ytId = m.tipo === "YouTube" ? youtubeId(m.url) : null
   const spotify = m.tipo === "Spotify" ? spotifyEmbed(m.url) : null
   const thumb = m.thumbnailUrl ?? (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null)
@@ -67,17 +73,34 @@ function MidiaCard({ m }: { m: Midia }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 mb-3">
       {ytId ? (
-        <button className="relative w-full block" onClick={() => Browser.open({ url: linkParaAbrir(m.url) })}>
-          {thumb
-            ? <img src={thumb} className="w-full aspect-video object-cover" />
-            : <div className="w-full aspect-video bg-gray-900 flex items-center justify-center"><span className="text-4xl">▶</span></div>
-          }
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-            <div className="bg-red-600 rounded-full w-14 h-14 flex items-center justify-center">
-              <span className="text-white text-2xl ml-1">▶</span>
+        playing ? (
+          <div>
+            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+              <iframe
+                src={embedUrl(ytId)}
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
             </div>
+            <button onClick={() => Browser.open({ url: linkParaAbrir(m.url) })}
+              className="w-full text-center text-xs text-red-600 font-semibold py-2">
+              Não carregou? Assistir no YouTube
+            </button>
           </div>
-        </button>
+        ) : (
+          <button className="relative w-full block" onClick={() => setPlaying(true)}>
+            {thumb
+              ? <img src={thumb} className="w-full aspect-video object-cover" />
+              : <div className="w-full aspect-video bg-gray-900 flex items-center justify-center"><span className="text-4xl">▶</span></div>
+            }
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+              <div className="bg-red-600 rounded-full w-14 h-14 flex items-center justify-center">
+                <span className="text-white text-2xl ml-1">▶</span>
+              </div>
+            </div>
+          </button>
+        )
       ) : (
         <a href={urlAbsoluta(m.url)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3">
           <div className={`w-16 h-16 rounded-lg flex items-center justify-center text-2xl text-white flex-shrink-0 ${

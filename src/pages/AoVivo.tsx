@@ -3,6 +3,8 @@ import { Browser } from "@capacitor/browser"
 import { useAuth } from "../contexts/AuthContext"
 import { conteudoApi } from "../api"
 
+const ORIGEM_EMBED = "https://mixdoreino.com.br"
+
 function youtubeId(url: string) {
   const m = url.match(/(?:v=|youtu\.be\/|\/live\/|\/embed\/)([A-Za-z0-9_-]{11})/)
   return m ? m[1] : null
@@ -17,15 +19,22 @@ function urlAbsoluta(url: string) {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`
 }
 
-// Links de "embed" (ex: youtube.com/embed/ID ou embed/live_stream?channel=X) so funcionam
-// dentro de um iframe com contexto de pagina-pai. Abertos direto no navegador (fora de um
-// iframe), o YouTube recusa com "Erro 153". Por isso convertemos pro link normal de assistir.
+// Link normal (nao-embed) para abrir no navegador como alternativa, caso o player embutido falhe.
 function linkParaAbrir(url: string) {
   const vid = youtubeId(url)
   if (vid) return `https://www.youtube.com/watch?v=${vid}`
   const canal = youtubeCanalAoVivo(url)
   if (canal) return `https://www.youtube.com/channel/${canal}/live`
   return urlAbsoluta(url)
+}
+
+// URL de embed valida (com origin fixo) para tocar dentro do proprio app via iframe.
+function embedUrl(url: string) {
+  const vid = youtubeId(url)
+  if (vid) return `https://www.youtube.com/embed/${vid}?autoplay=0&rel=0&playsinline=1&origin=${encodeURIComponent(ORIGEM_EMBED)}`
+  const canal = youtubeCanalAoVivo(url)
+  if (canal) return `https://www.youtube.com/embed/live_stream?channel=${canal}&autoplay=0&rel=0&playsinline=1&origin=${encodeURIComponent(ORIGEM_EMBED)}`
+  return null
 }
 
 export default function AoVivo() {
@@ -38,8 +47,7 @@ export default function AoVivo() {
   })
 
   const url: string | undefined = data?.urlStream
-  const vid = url ? youtubeId(url) : null
-  const thumb = vid ? `https://img.youtube.com/vi/${vid}/hqdefault.jpg` : null
+  const embed = url ? embedUrl(url) : null
 
   return (
     <div className="pb-16 min-h-screen bg-black flex flex-col">
@@ -50,22 +58,29 @@ export default function AoVivo() {
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         {isLoading && <p className="text-gray-400 dark:text-gray-500">Carregando...</p>}
 
-        {!isLoading && url && (
+        {!isLoading && embed && (
           <div className="w-full">
-            <button className="relative w-full block" onClick={() => Browser.open({ url: linkParaAbrir(url) })}>
-              {thumb
-                ? <img src={thumb} className="w-full aspect-video object-cover rounded-xl" />
-                : <div className="w-full aspect-video bg-gray-900 rounded-xl flex items-center justify-center"><span className="text-5xl">📡</span></div>
-              }
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center rounded-xl">
-                <div className="bg-red-600 rounded-full w-16 h-16 flex items-center justify-center">
-                  <span className="text-white text-3xl ml-1">▶</span>
-                </div>
-              </div>
-            </button>
-            <button onClick={() => Browser.open({ url: linkParaAbrir(url) })}
+            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+              <iframe
+                src={embed}
+                className="absolute inset-0 w-full h-full rounded-xl"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            <button onClick={() => Browser.open({ url: linkParaAbrir(url!) })}
               className="mt-4 flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 rounded-xl w-full">
-              ▶ Assistir Culto ao Vivo
+              ▶ Assistir no YouTube
+            </button>
+          </div>
+        )}
+
+        {!isLoading && !embed && url && (
+          <div className="text-center">
+            <p className="text-gray-400 dark:text-gray-500 mb-4">Link configurado mas não é um vídeo do YouTube.</p>
+            <button onClick={() => Browser.open({ url: urlAbsoluta(url) })}
+              className="bg-indigo-600 text-white font-bold px-8 py-3 rounded-xl">
+              Abrir Link
             </button>
           </div>
         )}
