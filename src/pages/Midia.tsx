@@ -1,5 +1,6 @@
-import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { Browser } from "@capacitor/browser"
+import { useState } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import { conteudoApi } from "../api"
 
@@ -21,7 +22,6 @@ function spotifyEmbed(url: string) {
 }
 
 function MidiaCard({ m }: { m: Midia }) {
-  const [playing, setPlaying] = useState(false)
   const ytId = m.tipo === "YouTube" ? youtubeId(m.url) : null
   const spotify = m.tipo === "Spotify" ? spotifyEmbed(m.url) : null
   const thumb = m.thumbnailUrl ?? (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null)
@@ -48,28 +48,17 @@ function MidiaCard({ m }: { m: Midia }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 mb-3">
       {ytId ? (
-        playing ? (
-          <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-            <iframe
-              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&playsinline=1&origin=${encodeURIComponent("https://mixdoreino.com.br")}`}
-              className="absolute inset-0 w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-        ) : (
-          <button className="relative w-full block" onClick={() => setPlaying(true)}>
-            {thumb
-              ? <img src={thumb} className="w-full aspect-video object-cover" />
-              : <div className="w-full aspect-video bg-gray-900 flex items-center justify-center"><span className="text-4xl">▶</span></div>
-            }
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <div className="bg-red-600 rounded-full w-14 h-14 flex items-center justify-center">
-                <span className="text-white text-2xl ml-1">▶</span>
-              </div>
+        <button className="relative w-full block" onClick={() => Browser.open({ url: m.url })}>
+          {thumb
+            ? <img src={thumb} className="w-full aspect-video object-cover" />
+            : <div className="w-full aspect-video bg-gray-900 flex items-center justify-center"><span className="text-4xl">▶</span></div>
+          }
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <div className="bg-red-600 rounded-full w-14 h-14 flex items-center justify-center">
+              <span className="text-white text-2xl ml-1">▶</span>
             </div>
-          </button>
-        )
+          </div>
+        </button>
       ) : (
         <a href={m.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3">
           <div className={`w-16 h-16 rounded-lg flex items-center justify-center text-2xl text-white flex-shrink-0 ${

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { Browser } from "@capacitor/browser"
 import { useAuth } from "../contexts/AuthContext"
 import { conteudoApi } from "../api"
 
@@ -18,9 +19,7 @@ export default function AoVivo() {
 
   const url: string | undefined = data?.urlStream
   const vid = url ? youtubeId(url) : null
-  const embedUrl = vid
-    ? `https://www.youtube.com/embed/${vid}?autoplay=0&rel=0&playsinline=1&origin=${encodeURIComponent("https://mixdoreino.com.br")}`
-    : null
+  const thumb = vid ? `https://img.youtube.com/vi/${vid}/hqdefault.jpg` : null
 
   return (
     <div className="pb-16 min-h-screen bg-black flex flex-col">
@@ -31,30 +30,23 @@ export default function AoVivo() {
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         {isLoading && <p className="text-gray-400 dark:text-gray-500">Carregando...</p>}
 
-        {!isLoading && embedUrl && (
+        {!isLoading && url && (
           <div className="w-full">
-            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-              <iframe
-                src={embedUrl}
-                className="absolute inset-0 w-full h-full rounded-xl"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-            <a href={url} target="_blank" rel="noopener noreferrer"
+            <button className="relative w-full block" onClick={() => Browser.open({ url })}>
+              {thumb
+                ? <img src={thumb} className="w-full aspect-video object-cover rounded-xl" />
+                : <div className="w-full aspect-video bg-gray-900 rounded-xl flex items-center justify-center"><span className="text-5xl">📡</span></div>
+              }
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center rounded-xl">
+                <div className="bg-red-600 rounded-full w-16 h-16 flex items-center justify-center">
+                  <span className="text-white text-3xl ml-1">▶</span>
+                </div>
+              </div>
+            </button>
+            <button onClick={() => Browser.open({ url })}
               className="mt-4 flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 rounded-xl w-full">
-              ▶ Abrir no YouTube
-            </a>
-          </div>
-        )}
-
-        {!isLoading && !embedUrl && url && (
-          <div className="text-center">
-            <p className="text-gray-400 dark:text-gray-500 mb-4">Link configurado mas não é um vídeo do YouTube.</p>
-            <a href={url} target="_blank" rel="noopener noreferrer"
-              className="bg-indigo-600 text-white font-bold px-8 py-3 rounded-xl">
-              Abrir Link
-            </a>
+              ▶ Assistir Culto ao Vivo
+            </button>
           </div>
         )}
 
