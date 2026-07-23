@@ -36,7 +36,7 @@ export default function AoVivo() {
 
         {!isLoading && url && (
           <div className="w-full">
-            <button className="relative w-full block" onClick={() => Browser.open({ url: urlAbsoluta(url) })}>
+            <button className="relative w-full block" onClick={() => Browser.open({ url: urlAbsoluta(url) }).catch(err => alert("DEBUG erro Browser.open: " + JSON.stringify(err) + " | url: " + urlAbsoluta(url)))}>
               {thumb
                 ? <img src={thumb} className="w-full aspect-video object-cover rounded-xl" />
                 : <div className="w-full aspect-video bg-gray-900 rounded-xl flex items-center justify-center"><span className="text-5xl">📡</span></div>
@@ -47,7 +47,7 @@ export default function AoVivo() {
                 </div>
               </div>
             </button>
-            <button onClick={() => Browser.open({ url: urlAbsoluta(url) })}
+            <button onClick={() => Browser.open({ url: urlAbsoluta(url) }).catch(err => alert("DEBUG erro Browser.open: " + JSON.stringify(err) + " | url: " + urlAbsoluta(url)))}
               className="mt-4 flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 rounded-xl w-full">
               ▶ Assistir Culto ao Vivo
             </button>
