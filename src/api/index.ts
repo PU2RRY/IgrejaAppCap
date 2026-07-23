@@ -9,7 +9,11 @@ export const appConfigApi = {
 }
 
 export const appAuthApi = {
-  registrar: (tenantId: string, data: { nome: string; email: string; senha: string; celular?: string; dataNascimento?: string; aceitouTermos: boolean }) =>
+  registrar: (tenantId: string, data: {
+    nome: string; email: string; senha: string; celular?: string; dataNascimento?: string; aceitouTermos: boolean
+    sexo?: string; cpf?: string; dataBatismo?: string; fotoUrl?: string
+    cep?: string; endereco?: string; numero?: string; complemento?: string; bairro?: string; cidade?: string; uf?: string
+  }) =>
     pub.post(`/app/igrejas/${tenantId}/registrar`, data),
   login: (tenantId: string, data: { email: string; senha: string }) =>
     pub.post(`/app/igrejas/${tenantId}/login`, data),
