@@ -13,6 +13,10 @@ function youtubeId(url: string) {
   return m ? m[1] : null
 }
 
+function urlAbsoluta(url: string) {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`
+}
+
 function spotifyEmbed(url: string) {
   const m = url.match(/open\.spotify\.com\/(?:embed\/)?(track|episode|show|playlist|album|artist)\/([A-Za-z0-9]+)/)
   if (!m) return null
@@ -48,7 +52,7 @@ function MidiaCard({ m }: { m: Midia }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 mb-3">
       {ytId ? (
-        <button className="relative w-full block" onClick={() => Browser.open({ url: m.url })}>
+        <button className="relative w-full block" onClick={() => Browser.open({ url: urlAbsoluta(m.url) })}>
           {thumb
             ? <img src={thumb} className="w-full aspect-video object-cover" />
             : <div className="w-full aspect-video bg-gray-900 flex items-center justify-center"><span className="text-4xl">▶</span></div>
@@ -60,7 +64,7 @@ function MidiaCard({ m }: { m: Midia }) {
           </div>
         </button>
       ) : (
-        <a href={m.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3">
+        <a href={urlAbsoluta(m.url)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3">
           <div className={`w-16 h-16 rounded-lg flex items-center justify-center text-2xl text-white flex-shrink-0 ${
             m.tipo === "Spotify" ? "bg-green-500" : "bg-red-600"
           }`}>
