@@ -19,14 +19,13 @@ export default function AoVivo() {
   const url: string | undefined = data?.urlStream
   const vid = url ? youtubeId(url) : null
   const embedUrl = vid
-    ? `https://www.youtube.com/embed/${vid}?autoplay=0&rel=0&playsinline=1&origin=${encodeURIComponent(window.location.origin)}`
+    ? `https://www.youtube.com/embed/${vid}?autoplay=0&rel=0&playsinline=1&origin=${encodeURIComponent("https://mixdoreino.com.br")}`
     : null
 
   return (
     <div className="pb-16 min-h-screen bg-black flex flex-col">
       <div className="bg-gray-900 dark:bg-black px-5 pt-10 pb-4">
         <h1 className="text-white text-2xl font-bold">📡 Culto ao Vivo</h1>
-        <p className="text-yellow-400 text-xs mt-1 break-all">DEBUG origin: {window.location.origin} | href: {window.location.href}</p>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center p-4">
