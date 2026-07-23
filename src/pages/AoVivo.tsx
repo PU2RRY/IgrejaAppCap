@@ -18,7 +18,9 @@ export default function AoVivo() {
 
   const url: string | undefined = data?.urlStream
   const vid = url ? youtubeId(url) : null
-  const embedUrl = vid ? `https://www.youtube.com/embed/${vid}?autoplay=0&rel=0` : null
+  const embedUrl = vid
+    ? `https://www.youtube.com/embed/${vid}?autoplay=0&rel=0&playsinline=1&origin=${encodeURIComponent(window.location.origin)}`
+    : null
 
   return (
     <div className="pb-16 min-h-screen bg-black flex flex-col">

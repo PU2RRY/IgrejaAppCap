@@ -51,7 +51,7 @@ function MidiaCard({ m }: { m: Midia }) {
         playing ? (
           <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
             <iframe
-              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`}
+              src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&playsinline=1&origin=${encodeURIComponent(window.location.origin)}`}
               className="absolute inset-0 w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
