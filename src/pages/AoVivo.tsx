@@ -28,12 +28,14 @@ function linkParaAbrir(url: string) {
   return urlAbsoluta(url)
 }
 
-// URL de embed valida (com origin fixo) para tocar dentro do proprio app via iframe.
+// Aponta para uma pagina real hospedada em mixdoreino.com.br (carregada via rede de verdade,
+// nao pelo esquema virtual do Capacitor) que por sua vez incorpora o YouTube. Isso contorna a
+// limitacao do WKWebView no iOS de nao conseguir ter uma origem https genuina localmente.
 function embedUrl(url: string) {
   const vid = youtubeId(url)
-  if (vid) return `https://www.youtube.com/embed/${vid}?autoplay=0&rel=0&playsinline=1&origin=${encodeURIComponent(ORIGEM_EMBED)}`
+  if (vid) return `${ORIGEM_EMBED}/embed.html?v=${vid}`
   const canal = youtubeCanalAoVivo(url)
-  if (canal) return `https://www.youtube.com/embed/live_stream?channel=${canal}&autoplay=0&rel=0&playsinline=1&origin=${encodeURIComponent(ORIGEM_EMBED)}`
+  if (canal) return `${ORIGEM_EMBED}/embed.html?channel=${canal}`
   return null
 }
 

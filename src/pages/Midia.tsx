@@ -33,8 +33,10 @@ function linkParaAbrir(url: string) {
   return urlAbsoluta(url)
 }
 
+// Aponta para uma pagina real hospedada em mixdoreino.com.br (rede de verdade, nao o
+// esquema virtual do Capacitor) que incorpora o YouTube — contorna a limitacao do WKWebView no iOS.
 function embedUrl(ytId: string) {
-  return `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&playsinline=1&origin=${encodeURIComponent(ORIGEM_EMBED)}`
+  return `${ORIGEM_EMBED}/embed.html?v=${ytId}`
 }
 
 function spotifyEmbed(url: string) {
