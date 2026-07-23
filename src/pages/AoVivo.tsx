@@ -8,8 +8,24 @@ function youtubeId(url: string) {
   return m ? m[1] : null
 }
 
+function youtubeCanalAoVivo(url: string) {
+  const m = url.match(/[?&]channel=([A-Za-z0-9_-]+)/)
+  return m ? m[1] : null
+}
+
 function urlAbsoluta(url: string) {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`
+}
+
+// Links de "embed" (ex: youtube.com/embed/ID ou embed/live_stream?channel=X) so funcionam
+// dentro de um iframe com contexto de pagina-pai. Abertos direto no navegador (fora de um
+// iframe), o YouTube recusa com "Erro 153". Por isso convertemos pro link normal de assistir.
+function linkParaAbrir(url: string) {
+  const vid = youtubeId(url)
+  if (vid) return `https://www.youtube.com/watch?v=${vid}`
+  const canal = youtubeCanalAoVivo(url)
+  if (canal) return `https://www.youtube.com/channel/${canal}/live`
+  return urlAbsoluta(url)
 }
 
 export default function AoVivo() {
@@ -36,7 +52,7 @@ export default function AoVivo() {
 
         {!isLoading && url && (
           <div className="w-full">
-            <button className="relative w-full block" onClick={() => Browser.open({ url: urlAbsoluta(url) }).catch(err => alert("DEBUG erro Browser.open: " + JSON.stringify(err) + " | url: " + urlAbsoluta(url)))}>
+            <button className="relative w-full block" onClick={() => Browser.open({ url: linkParaAbrir(url) })}>
               {thumb
                 ? <img src={thumb} className="w-full aspect-video object-cover rounded-xl" />
                 : <div className="w-full aspect-video bg-gray-900 rounded-xl flex items-center justify-center"><span className="text-5xl">📡</span></div>
@@ -47,7 +63,7 @@ export default function AoVivo() {
                 </div>
               </div>
             </button>
-            <button onClick={() => Browser.open({ url: urlAbsoluta(url) }).catch(err => alert("DEBUG erro Browser.open: " + JSON.stringify(err) + " | url: " + urlAbsoluta(url)))}
+            <button onClick={() => Browser.open({ url: linkParaAbrir(url) })}
               className="mt-4 flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 rounded-xl w-full">
               ▶ Assistir Culto ao Vivo
             </button>

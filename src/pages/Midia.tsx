@@ -17,6 +17,21 @@ function urlAbsoluta(url: string) {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`
 }
 
+function youtubeCanalAoVivo(url: string) {
+  const m = url.match(/[?&]channel=([A-Za-z0-9_-]+)/)
+  return m ? m[1] : null
+}
+
+// Links de "embed" so funcionam dentro de um iframe. Abertos direto no navegador, o
+// YouTube recusa com "Erro 153" — convertemos pro link normal de assistir.
+function linkParaAbrir(url: string) {
+  const vid = youtubeId(url)
+  if (vid) return `https://www.youtube.com/watch?v=${vid}`
+  const canal = youtubeCanalAoVivo(url)
+  if (canal) return `https://www.youtube.com/channel/${canal}/live`
+  return urlAbsoluta(url)
+}
+
 function spotifyEmbed(url: string) {
   const m = url.match(/open\.spotify\.com\/(?:embed\/)?(track|episode|show|playlist|album|artist)\/([A-Za-z0-9]+)/)
   if (!m) return null
@@ -52,7 +67,7 @@ function MidiaCard({ m }: { m: Midia }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 mb-3">
       {ytId ? (
-        <button className="relative w-full block" onClick={() => Browser.open({ url: urlAbsoluta(m.url) })}>
+        <button className="relative w-full block" onClick={() => Browser.open({ url: linkParaAbrir(m.url) })}>
           {thumb
             ? <img src={thumb} className="w-full aspect-video object-cover" />
             : <div className="w-full aspect-video bg-gray-900 flex items-center justify-center"><span className="text-4xl">▶</span></div>
