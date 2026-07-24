@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { PushNotifications } from "@capacitor/push-notifications"
+import { FirebaseMessaging } from "@capacitor-firebase/messaging"
 import { Capacitor } from "@capacitor/core"
 import { perfilApi } from "../api"
 import { addNotificacao } from "./useNotificationStore"
@@ -9,33 +9,39 @@ export function usePushNotifications(loggedIn: boolean) {
     if (!loggedIn || !Capacitor.isNativePlatform()) return
 
     async function init() {
-      const permission = await PushNotifications.requestPermissions()
+      const permission = await FirebaseMessaging.requestPermissions()
       if (permission.receive !== "granted") return
 
-      await PushNotifications.register()
+      // getToken() ja retorna o token FCM (no iOS, converte o token nativo da Apple por baixo dos panos).
+      try {
+        const { token } = await FirebaseMessaging.getToken()
+        await perfilApi.atualizarFcm(token)
+      } catch {
+        // silently ignore
+      }
 
-      await PushNotifications.addListener("registration", async (token) => {
+      await FirebaseMessaging.addListener("tokenReceived", async (event) => {
         try {
-          await perfilApi.atualizarFcm(token.value)
+          await perfilApi.atualizarFcm(event.token)
         } catch {
           // silently ignore
         }
       })
 
-      await PushNotifications.addListener("pushNotificationReceived", (notification) => {
+      await FirebaseMessaging.addListener("notificationReceived", (event) => {
         // App em foreground — salva localmente
+        const n: any = event.notification
         addNotificacao(
-          notification.title ?? notification.data?.titulo ?? "Notificação",
-          notification.body ?? notification.data?.corpo ?? "",
-          notification.data?.rota
+          n.title ?? n.data?.titulo ?? "Notificação",
+          n.body ?? n.data?.corpo ?? "",
+          n.data?.rota
         )
         window.dispatchEvent(new Event("notif-update"))
       })
 
-      await PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
-        // Usuário tocou na notificação (app em background/fechado) — o Android às vezes
-        // não repassa title/body no objeto notification, por isso usamos data como reforço.
-        const n = action.notification
+      await FirebaseMessaging.addListener("notificationActionPerformed", (event) => {
+        // Usuário tocou na notificação (app em background/fechado)
+        const n: any = event.notification
         addNotificacao(
           n.title ?? n.data?.titulo ?? "Notificação",
           n.body ?? n.data?.corpo ?? "",
@@ -49,7 +55,7 @@ export function usePushNotifications(loggedIn: boolean) {
     init()
 
     return () => {
-      PushNotifications.removeAllListeners()
+      FirebaseMessaging.removeAllListeners()
     }
   }, [loggedIn])
 }
