@@ -7,11 +7,6 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: true
   },
-  server: {
-    hostname: 'mixdoreino.com.br',
-    iosScheme: 'https',
-    androidScheme: 'https'
-  },
   plugins: {
     // Modo manual: quem decide quando checar/baixar/aplicar atualização é o nosso código
     // (src/services/otaUpdater.ts), não o serviço cloud do Capgo.
