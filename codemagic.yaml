@@ -47,7 +47,7 @@ workflows:
       - name: Incrementar numero do build
         script: |
           cd ios/App
-          BUILD_NUMBER=$(git rev-list --count HEAD)
+          BUILD_NUMBER=$(date +%Y%m%d%H%M)
           agvtool new-version -all "$BUILD_NUMBER"
 
       - name: Preparar keychain de assinatura
