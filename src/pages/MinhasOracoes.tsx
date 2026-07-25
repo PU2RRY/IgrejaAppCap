@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import { oracoesApi } from "../api"
+import { PersonPraying } from "../components/icons/PersonPraying"
 
 interface MinhaOracao {
   idOracao: number
@@ -63,7 +64,7 @@ export default function MinhasOracoes() {
   return (
     <div className="pb-16 min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="bg-gray-900 dark:bg-black px-5 pt-4 pb-4 flex items-center justify-between">
-        <h1 className="text-white text-xl font-bold">🙏 Orações</h1>
+        <h1 className="text-white text-xl font-bold flex items-center gap-2"><PersonPraying size={20} /> Orações</h1>
         <button onClick={() => navigate("/oracao")} className="bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full">
           + Novo Pedido
         </button>
@@ -105,7 +106,7 @@ export default function MinhasOracoes() {
 
           {!carregandoMinhas && !minhas?.length && (
             <div className="flex flex-col items-center justify-center mt-20 text-gray-400">
-              <p className="text-5xl mb-3">🙏</p>
+              <PersonPraying size={48} className="mb-3" />
               <p>Você ainda não fez nenhum pedido de oração.</p>
             </div>
           )}

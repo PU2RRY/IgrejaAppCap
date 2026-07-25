@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import { oracoesApi } from "../api"
+import { PersonPraying } from "../components/icons/PersonPraying"
 
 interface Tipo { idTipoOracao: number; nome: string }
 
@@ -24,7 +25,7 @@ export default function SolicitarOracao() {
   if (enviado) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-gray-50 dark:bg-gray-900 text-center">
-        <p className="text-6xl mb-4">🙏</p>
+        <PersonPraying size={64} className="mb-4 text-indigo-500" />
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Pedido enviado!</h1>
         <p className="text-gray-500 dark:text-gray-400 mb-6">Estamos orando com você. Deus abençoe!</p>
         <button onClick={() => navigate(-1)} className="bg-indigo-600 text-white font-bold px-8 py-3 rounded-xl">
@@ -38,7 +39,7 @@ export default function SolicitarOracao() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-10">
       <div className="bg-gray-900 dark:bg-black px-5 pt-10 pb-4 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="text-white text-xl">←</button>
-        <h1 className="text-white text-xl font-bold">🙏 Pedido de Oração</h1>
+        <h1 className="text-white text-xl font-bold flex items-center gap-2"><PersonPraying size={20} /> Pedido de Oração</h1>
       </div>
 
       <div className="p-4 space-y-4">
