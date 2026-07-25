@@ -22,10 +22,7 @@ export default function SolicitarOracao() {
   }
 
   const solicitar = useMutation({
-    mutationFn: () => {
-      const ids = tiposSelecionados.length > 0 ? tiposSelecionados : [null]
-      return Promise.all(ids.map(idTipoOracao => oracoesApi.solicitar({ idTipoOracao, descricao })))
-    },
+    mutationFn: () => oracoesApi.solicitar({ idsTipoOracao: tiposSelecionados, descricao }),
     onSuccess: () => setEnviado(true),
   })
 

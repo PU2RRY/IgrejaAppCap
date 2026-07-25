@@ -53,7 +53,7 @@ export const bemEstarApi = {
 
 export const oracoesApi = {
   tipos: () => api.get("/app/oracoes/tipos"),
-  solicitar: (data: { idTipoOracao: number | null; descricao: string }) => api.post("/app/oracoes", data),
+  solicitar: (data: { idsTipoOracao: number[]; descricao: string }) => api.post("/app/oracoes", data),
   minhas: () => api.get("/app/oracoes/minhas"),
   paraResponsavel: () => api.get("/app/oracoes/para-responsavel"),
   atualizarStatus: (id: number, status: "Pendente" | "EmOracao" | "Respondida") =>
