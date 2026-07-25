@@ -14,7 +14,7 @@ export default function BuscarIgreja() {
   const navigate = useNavigate()
   const fundo = useFundoApp()
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["igrejas", search],
     queryFn: () => igrejasApi.buscar(search).then(r => r.data as Igreja[]),
     enabled: search.length >= 2,
@@ -83,7 +83,12 @@ export default function BuscarIgreja() {
             <span className="text-indigo-500 text-lg">›</span>
           </button>
         ))}
-        {search.length >= 2 && !isLoading && !data?.length && (
+        {error && (
+          <p className="text-center mt-8 text-red-500 text-xs break-all px-2">
+            DEBUG erro: {(error as any)?.message} | status: {(error as any)?.response?.status} | data: {JSON.stringify((error as any)?.response?.data)}
+          </p>
+        )}
+        {search.length >= 2 && !isLoading && !error && !data?.length && (
           <p className={`text-center mt-8 ${fundo ? "text-white font-medium" : "text-gray-400 dark:text-gray-500"}`}
              style={fundo ? { textShadow: "0 1px 4px rgba(0,0,0,0.6)" } : undefined}>
             Nenhuma igreja encontrada.
