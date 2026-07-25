@@ -8,7 +8,7 @@ interface Tipo { idTipoOracao: number; nome: string }
 
 export default function SolicitarOracao() {
   const navigate = useNavigate()
-  const [idTipo, setIdTipo] = useState<number | null>(null)
+  const [tiposSelecionados, setTiposSelecionados] = useState<number[]>([])
   const [descricao, setDescricao] = useState("")
   const [enviado, setEnviado] = useState(false)
 
@@ -17,8 +17,15 @@ export default function SolicitarOracao() {
     queryFn: () => oracoesApi.tipos().then(r => r.data as Tipo[]),
   })
 
+  function alternarTipo(id: number) {
+    setTiposSelecionados(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id])
+  }
+
   const solicitar = useMutation({
-    mutationFn: () => oracoesApi.solicitar({ idTipoOracao: idTipo, descricao }),
+    mutationFn: () => {
+      const ids = tiposSelecionados.length > 0 ? tiposSelecionados : [null]
+      return Promise.all(ids.map(idTipoOracao => oracoesApi.solicitar({ idTipoOracao, descricao })))
+    },
     onSuccess: () => setEnviado(true),
   })
 
@@ -45,12 +52,12 @@ export default function SolicitarOracao() {
       <div className="p-4 space-y-4">
         {tipos && tipos.length > 0 && (
           <div>
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Tipo de pedido</label>
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Tipo de pedido (pode escolher mais de um)</label>
             <div className="flex flex-wrap gap-2 mt-2">
               {tipos.map(t => (
-                <button key={t.idTipoOracao} onClick={() => setIdTipo(t.idTipoOracao)}
+                <button key={t.idTipoOracao} onClick={() => alternarTipo(t.idTipoOracao)}
                   className={`px-4 py-2 rounded-full text-sm font-medium ${
-                    idTipo === t.idTipoOracao ? "bg-indigo-600 text-white" : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300"
+                    tiposSelecionados.includes(t.idTipoOracao) ? "bg-indigo-600 text-white" : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300"
                   }`}>
                   {t.nome}
                 </button>
