@@ -24,9 +24,12 @@ export default function Register() {
   const nome     = params.get("nome") ?? ""
   const navigate = useNavigate()
 
-  const [passo, setPasso] = useState<1 | 2>(1)
+  const [passo, setPasso] = useState<"dados" | "codigo" | "detalhes">("dados")
   const [form, setForm] = useState({ nome: "", email: "", senha: "", confirmar: "", celular: "", dataNascimento: "" })
   const [aceitouTermos, setAceitouTermos] = useState(false)
+  const [codigo, setCodigo] = useState("")
+  const [enviandoCodigo, setEnviandoCodigo] = useState(false)
+  const [confirmandoCodigo, setConfirmandoCodigo] = useState(false)
 
   const [form2, setForm2] = useState({
     sexo: "", cpf: "", dataBatismo: "", fotoUrl: "",
@@ -43,12 +46,43 @@ export default function Register() {
     setForm(f => ({ ...f, [k]: e.target.value }))
   const set2 = (k: keyof typeof form2, v: string) => setForm2(f => ({ ...f, [k]: v }))
 
-  const handleContinuar = (e: React.FormEvent) => {
+  const handleContinuar = async (e: React.FormEvent) => {
     e.preventDefault()
     if (form.senha !== form.confirmar) return setErro("As senhas não conferem")
     if (!aceitouTermos) return setErro("É necessário aceitar a Política de Privacidade para continuar")
-    setErro("")
-    setPasso(2)
+    setErro(""); setEnviandoCodigo(true)
+    try {
+      await appAuthApi.solicitarCodigoEmail(tenantId, form.email)
+      setPasso("codigo")
+    } catch (err: any) {
+      setErro(err.response?.data?.message ?? "Erro ao enviar código de confirmação")
+    } finally {
+      setEnviandoCodigo(false)
+    }
+  }
+
+  const handleConfirmarCodigo = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErro(""); setConfirmandoCodigo(true)
+    try {
+      await appAuthApi.confirmarCodigoEmail(tenantId, form.email, codigo)
+      setPasso("detalhes")
+    } catch (err: any) {
+      setErro(err.response?.data?.message ?? "Código inválido ou expirado")
+    } finally {
+      setConfirmandoCodigo(false)
+    }
+  }
+
+  const handleReenviarCodigo = async () => {
+    setErro(""); setEnviandoCodigo(true)
+    try {
+      await appAuthApi.solicitarCodigoEmail(tenantId, form.email)
+    } catch (err: any) {
+      setErro(err.response?.data?.message ?? "Erro ao reenviar código")
+    } finally {
+      setEnviandoCodigo(false)
+    }
   }
 
   const handleFotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,12 +158,12 @@ export default function Register() {
     </div>
   )
 
-  if (passo === 1) return (
+  if (passo === "dados") return (
     <div className="min-h-screen bg-gray-50 flex flex-col p-6">
       <button onClick={() => navigate(-1)} className="text-indigo-600 text-sm mb-4">← Voltar</button>
       <p className="text-center text-gray-500 text-sm">{nome}</p>
       <h2 className="text-2xl font-bold text-center mb-1">Criar Conta</h2>
-      <p className="text-center text-gray-400 text-xs mb-6">Passo 1 de 2 — dados de acesso</p>
+      <p className="text-center text-gray-400 text-xs mb-6">Passo 1 de 3 — dados de acesso</p>
 
       <form onSubmit={handleContinuar} className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
         {[
@@ -153,8 +187,35 @@ export default function Register() {
           <span>Li e aceito a <a href="/politica-de-privacidade" target="_blank" className="text-indigo-600 underline">Política de Privacidade</a> desta igreja.</span>
         </label>
         {erro && <p className="text-red-500 text-sm">{erro}</p>}
-        <button type="submit" className="w-full bg-indigo-600 text-white font-bold rounded-lg h-11">
-          Continuar
+        <button type="submit" disabled={enviandoCodigo} className="w-full bg-indigo-600 text-white font-bold rounded-lg h-11 disabled:opacity-60">
+          {enviandoCodigo ? "Enviando código..." : "Continuar"}
+        </button>
+      </form>
+    </div>
+  )
+
+  if (passo === "codigo") return (
+    <div className="min-h-screen bg-gray-50 flex flex-col p-6">
+      <button onClick={() => setPasso("dados")} className="text-indigo-600 text-sm mb-4">← Voltar</button>
+      <p className="text-center text-gray-500 text-sm">{nome}</p>
+      <h2 className="text-2xl font-bold text-center mb-1">Confirme seu E-mail</h2>
+      <p className="text-center text-gray-400 text-xs mb-6">Passo 2 de 3 — enviamos um código para {form.email}</p>
+
+      <form onSubmit={handleConfirmarCodigo} className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
+        <div>
+          <label className="text-sm font-semibold text-gray-700 block mb-1">Código de confirmação</label>
+          <input className="w-full border border-gray-300 rounded-lg px-3 h-11 text-base text-center tracking-[0.3em] font-bold outline-none focus:ring-2 focus:ring-indigo-500"
+            value={codigo} onChange={e => setCodigo(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="000000" inputMode="numeric" maxLength={6} />
+        </div>
+        {erro && <p className="text-red-500 text-sm">{erro}</p>}
+        <button type="submit" disabled={confirmandoCodigo || codigo.length !== 6}
+          className="w-full bg-indigo-600 text-white font-bold rounded-lg h-11 disabled:opacity-60">
+          {confirmandoCodigo ? "Confirmando..." : "Confirmar Código"}
+        </button>
+        <button type="button" onClick={handleReenviarCodigo} disabled={enviandoCodigo}
+          className="w-full text-indigo-600 text-sm font-semibold disabled:opacity-60">
+          {enviandoCodigo ? "Reenviando..." : "Reenviar código"}
         </button>
       </form>
     </div>
@@ -162,10 +223,10 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col p-6">
-      <button onClick={() => setPasso(1)} className="text-indigo-600 text-sm mb-4">← Voltar</button>
+      <button onClick={() => setPasso("codigo")} className="text-indigo-600 text-sm mb-4">← Voltar</button>
       <p className="text-center text-gray-500 text-sm">{nome}</p>
       <h2 className="text-2xl font-bold text-center mb-1">Complete seu Cadastro</h2>
-      <p className="text-center text-gray-400 text-xs mb-6">Passo 2 de 2 — tudo opcional, mas ajuda muito a igreja</p>
+      <p className="text-center text-gray-400 text-xs mb-6">Passo 3 de 3 — tudo opcional, mas ajuda muito a igreja</p>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
         <div>

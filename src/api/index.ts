@@ -24,6 +24,10 @@ export const appAuthApi = {
     pub.post(`/app/igrejas/${tenantId}/esqueci-senha/solicitar`, { email }),
   confirmarResetSenha: (tenantId: string, data: { email: string; codigo: string; novaSenha: string }) =>
     pub.post(`/app/igrejas/${tenantId}/esqueci-senha/confirmar`, data),
+  solicitarCodigoEmail: (tenantId: string, email: string) =>
+    pub.post(`/app/igrejas/${tenantId}/email/solicitar-codigo`, { email }),
+  confirmarCodigoEmail: (tenantId: string, email: string, codigo: string) =>
+    pub.post(`/app/igrejas/${tenantId}/email/confirmar-codigo`, { email, codigo }),
 }
 
 export const conteudoApi = {
