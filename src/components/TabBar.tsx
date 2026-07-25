@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { perfilApi } from "../api"
+import { PersonPraying } from "./icons/PersonPraying"
 
 const tabs = [
   {
@@ -21,11 +22,7 @@ const tabs = [
   },
   {
     to: "/oracao", label: "Pedido de Oração",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 21s-7-4.35-9.5-8.55C.83 9.24 2.2 5.5 5.6 5.06 7.7 4.8 9.6 5.9 12 8.5c2.4-2.6 4.3-3.7 6.4-3.44 3.4.44 4.77 4.18 3.1 7.39C19 16.65 12 21 12 21z" />
-      </svg>
-    ),
+    icon: <PersonPraying size={22} />,
   },
   {
     to: "/eventos", label: "Eventos",
