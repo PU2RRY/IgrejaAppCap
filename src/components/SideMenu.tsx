@@ -1,11 +1,30 @@
 import { useQuery } from "@tanstack/react-query"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
+import { Home, Calendar, CalendarDays, Users, Church, Sun, Moon, Repeat } from "lucide-react"
 import { escalasApi, reunioesApi, celulasApi, perfilApi } from "../api"
 import { useAuth } from "../contexts/AuthContext"
 import { useTheme } from "../contexts/ThemeContext"
+import { PersonPraying } from "./icons/PersonPraying"
+
+function ItemMenu({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active?: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 text-left px-4 py-3 rounded-xl font-medium transition-colors ${
+        active
+          ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400"
+          : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+      }`}
+    >
+      <span className={active ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-gray-500"}>{icon}</span>
+      {label}
+    </button>
+  )
+}
 
 export default function SideMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
 
@@ -46,6 +65,8 @@ export default function SideMenu({ open, onClose }: { open: boolean; onClose: ()
 
   if (!open) return null
 
+  const ativo = (path: string) => location.pathname === path
+
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
@@ -63,55 +84,41 @@ export default function SideMenu({ open, onClose }: { open: boolean; onClose: ()
         </div>
 
         <nav className="flex-1 py-3 space-y-1 px-2 overflow-y-auto">
-          <button onClick={() => go("/home")} className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-200">
-            🏠 Início
-          </button>
+          <ItemMenu icon={<Home size={20} />} label="Início" active={ativo("/home")} onClick={() => go("/home")} />
 
           {!isVisitante && temAcessoEscalas && (
-            <button onClick={() => go("/escalas")} className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-200">
-              📅 Escalas
-            </button>
+            <ItemMenu icon={<Calendar size={20} />} label="Escalas" active={ativo("/escalas")} onClick={() => go("/escalas")} />
           )}
 
           {!isVisitante && temAcessoReunioes && (
-            <button onClick={() => go("/reunioes")} className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-200">
-              🗓️ Reuniões
-            </button>
+            <ItemMenu icon={<CalendarDays size={20} />} label="Reuniões" active={ativo("/reunioes")} onClick={() => go("/reunioes")} />
           )}
 
           {!isVisitante && (
-            <button onClick={() => go("/oracoes")} className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-200">
-              🙏 Orações
-            </button>
+            <ItemMenu icon={<PersonPraying size={20} />} label="Orações" active={ativo("/oracoes")} onClick={() => go("/oracoes")} />
           )}
 
           {!isVisitante && temAcessoCelulas && (
-            <button onClick={() => go("/celulas")} className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-200">
-              🏠 Células
-            </button>
+            <ItemMenu icon={<Users size={20} />} label="Células" active={ativo("/celulas")} onClick={() => go("/celulas")} />
           )}
 
           <div className="border-t dark:border-gray-700 my-2" />
 
           {!isVisitante && (
-            <button onClick={() => go("/perfil")} className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-200">
-              👤 Perfil
-            </button>
+            <ItemMenu icon={<Home size={20} />} label="Perfil" active={ativo("/perfil")} onClick={() => go("/perfil")} />
           )}
 
           {!isVisitante && (
-            <button onClick={() => go("/igreja")} className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-200">
-              ✝️ Igreja
-            </button>
+            <ItemMenu icon={<Church size={20} />} label="Igreja" active={ativo("/igreja")} onClick={() => go("/igreja")} />
           )}
 
-          <button onClick={toggleTheme} className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-200">
-            <span>{theme === "dark" ? "☀️ Tema Claro" : "🌙 Tema Escuro"}</span>
-          </button>
+          <ItemMenu
+            icon={theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            label={theme === "dark" ? "Tema Claro" : "Tema Escuro"}
+            onClick={toggleTheme}
+          />
 
-          <button onClick={trocarIgreja} className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium text-gray-700 dark:text-gray-200">
-            ⛪ Trocar de Igreja
-          </button>
+          <ItemMenu icon={<Repeat size={20} />} label="Trocar de Igreja" onClick={trocarIgreja} />
         </nav>
       </div>
     </div>
