@@ -84,8 +84,8 @@ export default function BuscarIgreja() {
           </button>
         ))}
         {error && (
-          <p className="text-center mt-8 text-red-500 text-xs break-all px-2">
-            DEBUG erro: {(error as any)?.message} | status: {(error as any)?.response?.status} | data: {JSON.stringify((error as any)?.response?.data)}
+          <p className="text-center mt-8 text-red-500 text-sm px-4">
+            Não foi possível buscar agora. Verifique sua conexão e tente novamente.
           </p>
         )}
         {search.length >= 2 && !isLoading && !error && !data?.length && (
