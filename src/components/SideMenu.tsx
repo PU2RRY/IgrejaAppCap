@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useLocation, useNavigate } from "react-router-dom"
-import { Home, Calendar, CalendarDays, Users, Church, Sun, Moon, Repeat } from "lucide-react"
+import { Home, Calendar, CalendarDays, Users, Church, Sun, Moon, Repeat, Contact } from "lucide-react"
 import { escalasApi, reunioesApi, celulasApi, perfilApi } from "../api"
 import { useAuth } from "../contexts/AuthContext"
 import { useTheme } from "../contexts/ThemeContext"
@@ -105,7 +105,7 @@ export default function SideMenu({ open, onClose }: { open: boolean; onClose: ()
           <div className="border-t dark:border-gray-700 my-2" />
 
           {!isVisitante && (
-            <ItemMenu icon={<Home size={20} />} label="Perfil" active={ativo("/perfil")} onClick={() => go("/perfil")} />
+            <ItemMenu icon={<Contact size={20} />} label="Perfil" active={ativo("/perfil")} onClick={() => go("/perfil")} />
           )}
 
           {!isVisitante && (
