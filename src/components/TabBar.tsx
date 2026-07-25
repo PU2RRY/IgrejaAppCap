@@ -42,7 +42,7 @@ export default function TabBar() {
 
   return (
     <nav className="fixed bottom-4 left-4 right-4 z-50">
-      <div className="flex items-center justify-between bg-white/15 dark:bg-gray-900/15 backdrop-blur-md rounded-full shadow-lg shadow-black/10 border border-gray-200/60 dark:border-gray-700/60 px-6 py-2.5">
+      <div className="flex items-center justify-between bg-white/10 dark:bg-gray-900/10 backdrop-blur-md rounded-full shadow-lg shadow-black/10 border border-gray-200/60 dark:border-gray-700/60 px-6 py-2.5">
         {tabs.map(t => (
           <NavLink key={t.to} to={t.to} aria-label={t.label}
             className={({ isActive }) =>
