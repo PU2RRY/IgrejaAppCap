@@ -35,6 +35,7 @@ import Eventos from "./pages/Eventos"
 import EventoDetalhe from "./pages/EventoDetalhe"
 import GerenciarPresencaEvento from "./pages/GerenciarPresencaEvento"
 import BemEstar from "./pages/BemEstar"
+import VisitantesHoje from "./pages/VisitantesHoje"
 
 const queryClient = new QueryClient()
 
@@ -108,6 +109,7 @@ function AppRoutes() {
           <Route path="/trocar-senha"       element={<AppShell><TrocarSenha /></AppShell>} />
           <Route path="/celulas"           element={<AppShell><MinhaCelula /></AppShell>} />
           <Route path="/celulas/gerenciar" element={<AppShell><GerenciarCelulas /></AppShell>} />
+          <Route path="/visitantes" element={<AppShell><VisitantesHoje /></AppShell>} />
           <Route path="*"            element={<Navigate to="/home" replace />} />
         </>
       )}

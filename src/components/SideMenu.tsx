@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useLocation, useNavigate } from "react-router-dom"
-import { Home, Calendar, CalendarDays, Users, Church, Sun, Moon, Repeat, Contact } from "lucide-react"
+import { Home, Calendar, CalendarDays, Users, Church, Sun, Moon, Repeat, Contact, UserPlus } from "lucide-react"
 import { escalasApi, reunioesApi, celulasApi, perfilApi } from "../api"
 import { useAuth } from "../contexts/AuthContext"
 import { useTheme } from "../contexts/ThemeContext"
@@ -30,7 +30,7 @@ export default function SideMenu({ open, onClose }: { open: boolean; onClose: ()
 
   const { data: perfil } = useQuery({
     queryKey: ["meu-perfil"],
-    queryFn: () => perfilApi.meuPerfil().then(r => (r.data as any).data ?? r.data as { nome: string; fotoUrl?: string; tipoMembro?: string }),
+    queryFn: () => perfilApi.meuPerfil().then(r => (r.data as any).data ?? r.data as { nome: string; fotoUrl?: string; tipoMembro?: string; permiteVerVisitantes?: boolean }),
     enabled: open,
   })
 
@@ -100,6 +100,10 @@ export default function SideMenu({ open, onClose }: { open: boolean; onClose: ()
 
           {!isVisitante && temAcessoCelulas && (
             <ItemMenu icon={<Users size={20} />} label="Células" active={ativo("/celulas")} onClick={() => go("/celulas")} />
+          )}
+
+          {!isVisitante && perfil?.permiteVerVisitantes && (
+            <ItemMenu icon={<UserPlus size={20} />} label="Visitantes de Hoje" active={ativo("/visitantes")} onClick={() => go("/visitantes")} />
           )}
 
           <div className="border-t dark:border-gray-700 my-2" />

@@ -60,6 +60,11 @@ export const oracoesApi = {
     api.put(`/app/oracoes/${id}/status`, { status }),
 }
 
+export const visitantesApi = {
+  hoje: () => api.get("/app/visitantes/hoje"),
+  cadastrar: (data: { nome: string; celular?: string | null; email?: string | null }) => api.post("/app/visitantes", data),
+}
+
 export const reunioesApi = {
   tenhoAcesso: () => api.get("/app/reunioes/tenho-acesso"),
   tipos: () => api.get("/app/reunioes/tipos"),
