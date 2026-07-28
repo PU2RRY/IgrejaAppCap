@@ -32,6 +32,7 @@ android/captures
 android/.cxx
 *.keystore
 *.jks
+android/key.properties
 
 # iOS (gerado por `npx cap add ios`)
 ios/App/Pods
