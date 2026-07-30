@@ -14,6 +14,25 @@ interface ManifestoAtualizacao {
 export const EVENTO_ATUALIZACAO_DISPONIVEL = "ota-atualizacao-disponivel"
 
 /**
+ * Compara duas versões "x.y.z". Retorna >0 se `a` for mais nova que `b`, <0 se mais velha, 0 se igual.
+ * Qualquer valor não numérico em `b` (ex.: o bundle nativo builtin, antes de qualquer OTA já reportar
+ * um formato diferente) é tratado como "mais velho que qualquer versão real", nunca bloqueando um OTA
+ * genuinamente novo por causa disso.
+ */
+function compararVersoes(a: string, b: string): number {
+  const partsA = a.split(".").map(Number)
+  const partsB = b.split(".").map(Number)
+  if (partsB.some(isNaN)) return partsA.some(isNaN) ? 0 : 1
+
+  for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+    const na = partsA[i] ?? 0
+    const nb = partsB[i] ?? 0
+    if (na !== nb) return na - nb
+  }
+  return 0
+}
+
+/**
  * Avisa a camada nativa que o bundle carregou com sucesso (evita rollback automático do Capacitor Updater),
  * e então verifica se existe uma versão mais nova do app publicada. Se existir, baixa e agenda pra aplicar
  * na próxima vez que o app for pra segundo plano ou reaberto — sem interromper a sessão atual do usuário.
@@ -36,8 +55,10 @@ export async function iniciarAtualizador() {
     const manifesto: ManifestoAtualizacao = await resp.json()
     console.log("[OTA] manifesto:", JSON.stringify(manifesto))
     if (!manifesto.versao || !manifesto.url) return
-    if (manifesto.versao === atual.bundle.version) {
-      console.log("[OTA] já está na versão mais recente, nada a fazer.")
+    // Nunca aplica downgrade: só atualiza se o OTA for genuinamente mais novo que o bundle atual
+    // (nativo ou OTA anterior). Comparação numérica por partes do versionamento "x.y.z".
+    if (compararVersoes(manifesto.versao, atual.bundle.version) <= 0) {
+      console.log("[OTA] já está na versão mais recente (ou mais nova), nada a fazer.")
       return
     }
 
