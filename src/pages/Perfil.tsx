@@ -56,6 +56,7 @@ export default function Perfil() {
       await perfilApi.atualizarFoto(url)
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["meu-perfil"] }),
+    onError: () => alert("Não foi possível atualizar sua foto agora. Tente novamente."),
   })
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -72,8 +73,8 @@ export default function Perfil() {
   return (
     <div className="pb-16">
       <div className="bg-indigo-600 flex flex-col items-center py-10 px-6">
-        <button onClick={() => perfil?.fotoEditavel && fileRef.current?.click()}
-          className="relative mb-3" disabled={!perfil?.fotoEditavel}>
+        <button onClick={() => perfil?.fotoEditavel && !atualizarFoto.isPending && fileRef.current?.click()}
+          className="relative mb-3" disabled={!perfil?.fotoEditavel || atualizarFoto.isPending}>
           {perfil?.fotoUrl ? (
             <img src={perfil.fotoUrl} className="w-20 h-20 rounded-full object-cover border-2 border-white" />
           ) : (
@@ -81,12 +82,20 @@ export default function Perfil() {
               {user?.nome?.charAt(0).toUpperCase() ?? "?"}
             </div>
           )}
-          {perfil?.fotoEditavel && (
+          {atualizarFoto.isPending && (
+            <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+              <div className="w-7 h-7 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            </div>
+          )}
+          {perfil?.fotoEditavel && !atualizarFoto.isPending && (
             <span className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-white flex items-center justify-center text-indigo-600 text-xs shadow">
               ✏️
             </span>
           )}
         </button>
+        {atualizarFoto.isPending && (
+          <p className="text-indigo-200 text-xs -mt-2 mb-2">Enviando foto...</p>
+        )}
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
         <p className="text-white text-xl font-bold">{user?.nome}</p>
         <p className="text-indigo-200 text-sm mt-1">{user?.email}</p>
