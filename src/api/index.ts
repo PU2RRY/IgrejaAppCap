@@ -43,6 +43,7 @@ export const perfilApi = {
   atualizarFoto: (fotoUrl: string) => api.put("/app/meu-perfil/foto", { fotoUrl }),
   trocarSenha: (senhaAtual: string, senhaNova: string) =>
     api.put("/app/meu-perfil/senha", { senhaAtual, senhaNova }),
+  excluirConta: () => api.delete("/app/meu-perfil"),
 }
 
 export const bemEstarApi = {

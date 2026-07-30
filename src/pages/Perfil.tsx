@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import { useAuth } from "../contexts/AuthContext"
@@ -37,6 +37,13 @@ export default function Perfil() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false)
+
+  const excluirConta = useMutation({
+    mutationFn: () => perfilApi.excluirConta(),
+    onSuccess: () => { logout(); navigate("/") },
+    onError: () => alert("Não foi possível excluir sua conta agora. Tente novamente em instantes."),
+  })
 
   const { data: perfil } = useQuery({
     queryKey: ["meu-perfil"],
@@ -129,8 +136,35 @@ export default function Perfil() {
           🚪 Sair
         </button>
 
+        <button onClick={() => setConfirmandoExclusao(true)}
+          className="w-full bg-white border border-gray-200 rounded-xl p-4 text-left shadow-sm font-semibold text-gray-400">
+          🗑️ Excluir minha conta
+        </button>
+
         <p className="text-center text-xs text-gray-300 pt-2">Versão {__APP_VERSION__}</p>
       </div>
+
+      {confirmandoExclusao && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6" onClick={() => setConfirmandoExclusao(false)}>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Excluir sua conta?</h2>
+            <p className="text-sm text-gray-600 mb-5">
+              Seus dados pessoais (nome, foto, contato) serão removidos permanentemente e você não vai
+              mais conseguir entrar com essa conta. Essa ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setConfirmandoExclusao(false)}
+                className="flex-1 border border-gray-200 text-gray-700 font-bold py-3 rounded-xl">
+                Cancelar
+              </button>
+              <button onClick={() => excluirConta.mutate()} disabled={excluirConta.isPending}
+                className="flex-1 bg-red-600 text-white font-bold py-3 rounded-xl disabled:opacity-50">
+                {excluirConta.isPending ? "Excluindo..." : "Excluir"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
