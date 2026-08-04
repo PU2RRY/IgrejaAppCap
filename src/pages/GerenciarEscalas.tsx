@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
-import { escalasApi } from "../api"
+import { escalasApi, engajamentoApi } from "../api"
 
 interface Ministerio { idMinisterio: number; nome: string; nomeDepartamento?: string }
 interface MembroOpt { idMembro: number; nome: string; fotoUrl?: string; status: string }
-interface EscalaMembro { idMembro: number; nome: string; fotoUrl?: string; status: string }
+interface EscalaMembro { idMembro: number; nome: string; fotoUrl?: string; status: string; funcao?: string | null }
 interface Escala {
   idEscala: number
   idMinisterio: number
@@ -14,6 +14,18 @@ interface Escala {
   dataEvento: string
   observacoes?: string
   membros: EscalaMembro[]
+}
+
+interface PendentePresenca {
+  idEscalaMembro: number
+  idEscala: number
+  tituloEscala: string
+  dataEvento: string
+  nomeMinisterio: string
+  idMembro: number
+  nomeMembro: string
+  fotoUrl?: string | null
+  statusConfirmacao: string
 }
 
 function fmt(s: string) {
@@ -34,6 +46,12 @@ export default function GerenciarEscalas() {
   const [idMinisterio, setIdMinisterio] = useState<number | null>(null)
   const [form, setForm] = useState<Escala | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [presencaAlvo, setPresencaAlvo] = useState<PendentePresenca | null>(null)
+
+  const { data: pendentesPresenca } = useQuery({
+    queryKey: ["pendentes-presenca"],
+    queryFn: () => engajamentoApi.pendentesPresenca().then(r => r.data as PendentePresenca[]),
+  })
 
   const { data: ministerios } = useQuery({
     queryKey: ["ministerios-que-lidero"],
@@ -50,14 +68,8 @@ export default function GerenciarEscalas() {
     enabled: !!idMinisterio,
   })
 
-  const { data: membrosDisponiveis } = useQuery({
-    queryKey: ["membros-ministerio", idMinisterio],
-    queryFn: () => escalasApi.membrosDoMinisterio(idMinisterio!).then(r => r.data as MembroOpt[]),
-    enabled: !!idMinisterio,
-  })
-
   const salvar = useMutation({
-    mutationFn: (dados: { titulo: string; dataEvento: string; observacoes?: string; idsMembros: number[] }) =>
+    mutationFn: (dados: { titulo: string; dataEvento: string; observacoes?: string; membros: { idMembro: number; funcao?: string | null }[] }) =>
       form?.idEscala
         ? escalasApi.atualizar(form.idEscala, dados)
         : escalasApi.criar({ idMinisterio: idMinisterio!, ...dados }),
@@ -71,6 +83,16 @@ export default function GerenciarEscalas() {
   const excluir = useMutation({
     mutationFn: (id: number) => escalasApi.excluir(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["escalas", idMinisterio] }),
+    onError: (err: any) => alert(err?.response?.data?.message || "Não foi possível excluir esta escala."),
+  })
+
+  const registrarPresenca = useMutation({
+    mutationFn: (dados: { idEscalaMembro: number; compareceu: boolean; notaLider?: number | null; comentarioLider?: string | null }) =>
+      engajamentoApi.registrarPresenca(dados.idEscalaMembro, dados),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["pendentes-presenca"] })
+      setPresencaAlvo(null)
+    },
   })
 
   function abrirNovo() {
@@ -109,6 +131,32 @@ export default function GerenciarEscalas() {
           </select>
         )}
 
+        {pendentesPresenca && pendentesPresenca.length > 0 && (
+          <div className="space-y-2">
+            <h2 className="text-sm font-bold text-gray-700 dark:text-gray-300">Presença pendente</h2>
+            {Object.entries(
+              pendentesPresenca.reduce<Record<string, PendentePresenca[]>>((acc, p) => {
+                (acc[p.idEscala] ??= []).push(p)
+                return acc
+              }, {})
+            ).map(([idEscala, membros]) => (
+              <div key={idEscala} className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border border-amber-200 dark:border-amber-800">
+                <p className="font-bold text-gray-900 dark:text-gray-100">{membros[0].tituloEscala}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{fmt(membros[0].dataEvento)}</p>
+                <div className="space-y-1.5">
+                  {membros.map(p => (
+                    <button key={p.idEscalaMembro} onClick={() => setPresencaAlvo(p)}
+                      className="w-full flex items-center justify-between p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-left">
+                      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{p.nomeMembro}</span>
+                      <span className="text-xs font-bold text-indigo-600">Registrar</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <button onClick={abrirNovo}
           className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl">
           + Nova Escala
@@ -136,7 +184,7 @@ export default function GerenciarEscalas() {
                   m.status === "Confirmado" ? "bg-green-100 text-green-700" :
                   m.status === "Recusado" ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-600"
                 }`}>
-                  {m.nome} {m.status === "Confirmado" ? "✓" : m.status === "Recusado" ? "✗" : ""}
+                  {m.nome}{m.funcao ? ` (${m.funcao})` : ""} {m.status === "Confirmado" ? "✓" : m.status === "Recusado" ? "✗" : ""}
                 </span>
               ))}
             </div>
@@ -151,36 +199,124 @@ export default function GerenciarEscalas() {
       {showForm && form && (
         <EscalaFormModal
           form={form}
-          membrosDisponiveis={membrosDisponiveis ?? []}
           onClose={() => { setShowForm(false); setForm(null) }}
           onSave={(dados) => salvar.mutate(dados)}
           saving={salvar.isPending}
+        />
+      )}
+
+      {presencaAlvo && (
+        <PresencaModal
+          pendente={presencaAlvo}
+          onClose={() => setPresencaAlvo(null)}
+          onSave={(dados) => registrarPresenca.mutate({ idEscalaMembro: presencaAlvo.idEscalaMembro, ...dados })}
+          saving={registrarPresenca.isPending}
         />
       )}
     </div>
   )
 }
 
-function EscalaFormModal({ form, membrosDisponiveis, onClose, onSave, saving }: {
-  form: Escala
-  membrosDisponiveis: MembroOpt[]
+function PresencaModal({ pendente, onClose, onSave, saving }: {
+  pendente: PendentePresenca
   onClose: () => void
-  onSave: (dados: { titulo: string; dataEvento: string; observacoes?: string; idsMembros: number[] }) => void
+  onSave: (dados: { compareceu: boolean; notaLider?: number | null; comentarioLider?: string | null }) => void
+  saving: boolean
+}) {
+  const [compareceu, setCompareceu] = useState<boolean | null>(null)
+  const [nota, setNota] = useState(0)
+  const [comentario, setComentario] = useState("")
+
+  function submit() {
+    if (compareceu === null) return
+    onSave({
+      compareceu,
+      notaLider: compareceu && nota > 0 ? nota : null,
+      comentarioLider: compareceu && comentario ? comentario : null,
+    })
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto p-5">
+        <h2 className="text-lg font-bold mb-1 text-gray-900 dark:text-gray-100">Registrar presença</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{pendente.nomeMembro} — {pendente.tituloEscala}</p>
+
+        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Compareceu?</label>
+        <div className="flex gap-2 mt-1 mb-4">
+          <button onClick={() => setCompareceu(true)}
+            className={`flex-1 py-2 rounded-xl font-bold text-sm ${compareceu === true ? "bg-green-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
+            Sim
+          </button>
+          <button onClick={() => setCompareceu(false)}
+            className={`flex-1 py-2 rounded-xl font-bold text-sm ${compareceu === false ? "bg-red-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}>
+            Não
+          </button>
+        </div>
+
+        {compareceu === true && (
+          <>
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Nota (opcional)</label>
+            <div className="flex gap-1 mt-1 mb-3">
+              {[1, 2, 3, 4, 5].map(n => (
+                <button key={n} onClick={() => setNota(n === nota ? 0 : n)} className="text-2xl leading-none">
+                  {n <= nota ? <span className="text-yellow-400">★</span> : <span className="text-gray-300 dark:text-gray-600">☆</span>}
+                </button>
+              ))}
+            </div>
+
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Comentário (opcional)</label>
+            <input value={comentario} onChange={e => setComentario(e.target.value)}
+              placeholder="Como foi o desempenho..."
+              className="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 rounded-xl p-3 mt-1 mb-4" />
+          </>
+        )}
+
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl py-3 font-bold text-gray-600 dark:text-gray-300">
+            Cancelar
+          </button>
+          <button onClick={submit} disabled={compareceu === null || saving}
+            className="flex-1 bg-indigo-600 text-white rounded-xl py-3 font-bold disabled:opacity-50">
+            {saving ? "Salvando..." : "Salvar"}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EscalaFormModal({ form, onClose, onSave, saving }: {
+  form: Escala
+  onClose: () => void
+  onSave: (dados: { titulo: string; dataEvento: string; observacoes?: string; membros: { idMembro: number; funcao?: string | null }[] }) => void
   saving: boolean
 }) {
   const [titulo, setTitulo] = useState(form.titulo)
   const [dataEvento, setDataEvento] = useState(toLocalInputValue(form.dataEvento))
   const [observacoes, setObservacoes] = useState(form.observacoes ?? "")
-  const [selecionados, setSelecionados] = useState<Set<number>>(
-    new Set(form.membros.map(m => m.idMembro))
+  const [selecionados, setSelecionados] = useState<Map<number, string>>(
+    new Map(form.membros.map(m => [m.idMembro, m.funcao ?? ""]))
   )
+
+  const dataEventoIso = dataEvento ? new Date(dataEvento).toISOString() : undefined
+  const { data: membrosDisponiveis } = useQuery({
+    queryKey: ["membros-ministerio", form.idMinisterio, dataEventoIso],
+    queryFn: () => escalasApi.membrosDoMinisterio(form.idMinisterio, dataEventoIso).then(r => r.data as MembroOpt[]),
+    enabled: !!form.idMinisterio,
+  })
+  const membros = membrosDisponiveis ?? []
 
   function toggle(id: number) {
     setSelecionados(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id); else next.add(id)
+      const next = new Map(prev)
+      if (next.has(id)) next.delete(id); else next.set(id, "")
       return next
     })
+  }
+
+  function setFuncao(id: number, funcao: string) {
+    setSelecionados(prev => new Map(prev).set(id, funcao))
   }
 
   function submit() {
@@ -189,7 +325,7 @@ function EscalaFormModal({ form, membrosDisponiveis, onClose, onSave, saving }: 
       titulo,
       dataEvento: new Date(dataEvento).toISOString(),
       observacoes: observacoes || undefined,
-      idsMembros: [...selecionados],
+      membros: [...selecionados].map(([idMembro, funcao]) => ({ idMembro, funcao: funcao || null })),
     })
   }
 
@@ -212,21 +348,33 @@ function EscalaFormModal({ form, membrosDisponiveis, onClose, onSave, saving }: 
           className="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 rounded-xl p-3 mt-1 mb-3 resize-none" />
 
         <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Selecione os membros</label>
-        <div className="mt-2 space-y-2 max-h-52 overflow-y-auto">
-          {membrosDisponiveis.map(m => (
-            <button key={m.idMembro} onClick={() => toggle(m.idMembro)}
-              className={`w-full flex items-center gap-3 p-3 rounded-xl border ${
-                selecionados.has(m.idMembro) ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950" : "border-gray-200 dark:border-gray-700"
-              }`}>
-              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
-                {m.nome.charAt(0)}
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Apenas membros disponíveis nessa data aparecem aqui.</p>
+        <div className="mt-2 space-y-2 max-h-64 overflow-y-auto">
+          {membros.map(m => {
+            const selecionado = selecionados.has(m.idMembro)
+            return (
+              <div key={m.idMembro} className={`rounded-xl border ${selecionado ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950" : "border-gray-200 dark:border-gray-700"}`}>
+                <button onClick={() => toggle(m.idMembro)} className="w-full flex items-center gap-3 p-3">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm shrink-0">
+                    {m.nome.charAt(0)}
+                  </div>
+                  <span className="flex-1 text-left font-medium text-gray-800 dark:text-gray-200">{m.nome}</span>
+                  {selecionado && <span className="text-indigo-600 font-bold">✓</span>}
+                </button>
+                {selecionado && (
+                  <input
+                    value={selecionados.get(m.idMembro) ?? ""}
+                    onChange={e => setFuncao(m.idMembro, e.target.value)}
+                    onClick={e => e.stopPropagation()}
+                    placeholder="Função (ex: Vocal, Baterista) — opcional"
+                    className="w-full text-sm border-t border-indigo-200 dark:border-indigo-800 bg-transparent px-3 py-2 focus:outline-none dark:text-gray-100"
+                  />
+                )}
               </div>
-              <span className="flex-1 text-left font-medium text-gray-800 dark:text-gray-200">{m.nome}</span>
-              {selecionados.has(m.idMembro) && <span className="text-indigo-600 font-bold">✓</span>}
-            </button>
-          ))}
-          {membrosDisponiveis.length === 0 && (
-            <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">Nenhum membro ativo neste ministério.</p>
+            )
+          })}
+          {membros.length === 0 && (
+            <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">Nenhum membro disponível neste ministério para essa data.</p>
           )}
         </div>
 

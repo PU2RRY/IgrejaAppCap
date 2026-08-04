@@ -114,13 +114,40 @@ export const escalasApi = {
   tenhoAcesso: () => api.get("/app/escalas/tenho-acesso"),
   minhas: () => api.get("/app/escalas/minhas"),
   ministeriosQueLidero: () => api.get("/app/escalas/ministerios-que-lidero"),
-  membrosDoMinisterio: (idMinisterio: number) => api.get(`/app/escalas/ministerio/${idMinisterio}/membros`),
+  membrosDoMinisterio: (idMinisterio: number, dataEvento?: string) =>
+    api.get(`/app/escalas/ministerio/${idMinisterio}/membros`, { params: dataEvento ? { dataEvento } : {} }),
   porMinisterio: (idMinisterio: number) => api.get(`/app/escalas/ministerio/${idMinisterio}`),
-  criar: (data: { idMinisterio: number; titulo: string; dataEvento: string; observacoes?: string; idsMembros: number[] }) =>
+  criar: (data: { idMinisterio: number; titulo: string; dataEvento: string; observacoes?: string; membros: { idMembro: number; funcao?: string | null }[] }) =>
     api.post("/app/escalas", data),
-  atualizar: (id: number, data: { titulo: string; dataEvento: string; observacoes?: string; idsMembros: number[] }) =>
+  atualizar: (id: number, data: { titulo: string; dataEvento: string; observacoes?: string; membros: { idMembro: number; funcao?: string | null }[] }) =>
     api.put(`/app/escalas/${id}`, data),
   excluir: (id: number) => api.delete(`/app/escalas/${id}`),
   responder: (id: number, status: "Confirmado" | "Recusado") =>
     api.put(`/app/escalas/${id}/responder`, { status }),
+  substitutos: (idEscalaMembro: number) => api.get(`/app/escalas/membros/${idEscalaMembro}/substitutos`),
+  solicitarTroca: (idEscalaMembro: number, data: { idMembroDestino: number; motivo?: string }) =>
+    api.post(`/app/escalas/membros/${idEscalaMembro}/trocar`, data),
+  minhasTrocas: () => api.get("/app/escalas/trocas"),
+  responderTrocaSubstituto: (id: number, aceitar: boolean) =>
+    api.put(`/app/escalas/trocas/${id}/responder-substituto`, { aceitar }),
+  responderTrocaLider: (id: number, aprovar: boolean, motivoRejeicao?: string) =>
+    api.put(`/app/escalas/trocas/${id}/responder-lider`, { aprovar, motivoRejeicao }),
+  removerTroca: (id: number) => api.delete(`/app/escalas/trocas/${id}`),
+}
+
+export const engajamentoApi = {
+  pendentesPresenca: () => api.get("/app/engajamento/pendentes-presenca"),
+  registrarPresenca: (idEscalaMembro: number, data: { compareceu: boolean; notaLider?: number | null; comentarioLider?: string | null }) =>
+    api.put(`/app/engajamento/membros/${idEscalaMembro}/presenca`, data),
+  pendentesAvaliacao: () => api.get("/app/engajamento/pendentes-avaliacao"),
+  registrarAvaliacao: (idEscalaMembro: number, data: { notaVoluntario: number; comentarioVoluntario?: string | null }) =>
+    api.put(`/app/engajamento/membros/${idEscalaMembro}/avaliacao`, data),
+  meu: () => api.get("/app/engajamento/meu"),
+}
+
+export const disponibilidadeApi = {
+  listar: () => api.get("/app/disponibilidade"),
+  criar: (data: { diaSemana?: number | null; data?: string | null; periodo?: string | null; motivo?: string | null }) =>
+    api.post("/app/disponibilidade", data),
+  remover: (id: number) => api.delete(`/app/disponibilidade/${id}`),
 }

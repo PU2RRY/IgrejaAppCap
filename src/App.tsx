@@ -24,6 +24,8 @@ import Perfil    from "./pages/Perfil"
 import Notificacoes from "./pages/Notificacoes"
 import MinhasEscalas from "./pages/MinhasEscalas"
 import GerenciarEscalas from "./pages/GerenciarEscalas"
+import Disponibilidade from "./pages/Disponibilidade"
+import MeuEngajamento from "./pages/MeuEngajamento"
 import SolicitarOracao from "./pages/SolicitarOracao"
 import MinhasOracoes from "./pages/MinhasOracoes"
 import MinhasReunioes from "./pages/MinhasReunioes"
@@ -101,6 +103,8 @@ function AppRoutes() {
           <Route path="/notificacoes"   element={<AppShell><Notificacoes /></AppShell>} />
           <Route path="/escalas"           element={<AppShell><MinhasEscalas /></AppShell>} />
           <Route path="/escalas/gerenciar" element={<AppShell><GerenciarEscalas /></AppShell>} />
+          <Route path="/escalas/disponibilidade" element={<AppShell><Disponibilidade /></AppShell>} />
+          <Route path="/escalas/engajamento" element={<AppShell><MeuEngajamento /></AppShell>} />
           <Route path="/oracao"   element={<AppShell><SolicitarOracao /></AppShell>} />
           <Route path="/bem-estar" element={<AppShell><BemEstar /></AppShell>} />
           <Route path="/oracoes"  element={<AppShell><MinhasOracoes /></AppShell>} />

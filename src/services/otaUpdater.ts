@@ -36,10 +36,20 @@ function compararVersoes(a: string, b: string): number {
  * Avisa a camada nativa que o bundle carregou com sucesso (evita rollback automático do Capacitor Updater),
  * e então verifica se existe uma versão mais nova do app publicada. Se existir, baixa e agenda pra aplicar
  * na próxima vez que o app for pra segundo plano ou reaberto — sem interromper a sessão atual do usuário.
+ *
+ * NUNCA faz isso no iOS: a Apple rejeita explicitamente (Diretriz 2.5.2) qualquer app que baixe e aplique
+ * um bundle remoto capaz de mudar o comportamento do app depois de aprovado na revisão — mesmo que a
+ * intenção seja só corrigir bugs. No iOS, toda atualização de código passa a exigir build novo + envio
+ * pra App Store. O Android continua recebendo OTA normalmente (a Google Play é bem mais tolerante).
  */
 export async function iniciarAtualizador() {
   console.log("[OTA] iniciarAtualizador chamado. Nativo?", Capacitor.isNativePlatform())
   if (!Capacitor.isNativePlatform()) return
+
+  if (Capacitor.getPlatform() === "ios") {
+    console.log("[OTA] iOS: atualização remota desativada por política da App Store (Diretriz 2.5.2).")
+    return
+  }
 
   await CapacitorUpdater.notifyAppReady()
   console.log("[OTA] notifyAppReady enviado")
