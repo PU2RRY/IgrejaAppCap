@@ -44,11 +44,17 @@ workflows:
             project.save
           '
 
-      - name: Incrementar numero do build
+      - name: Incrementar numero do build e sincronizar versão de marketing
         script: |
+          # A versão de marketing (CFBundleShortVersionString) precisa ser sempre maior que a
+          # última aprovada pela Apple, senão o envio é rejeitado (erro 90062/90186) mesmo com
+          # build number novo. Sincronizamos ela com a versão do package.json a cada build, pra
+          # nunca mais depender de lembrar de editar isso manualmente no Xcode.
+          APP_VERSION=$(node -p "require('./package.json').version")
           cd ios/App
           BUILD_NUMBER=$(date +%Y%m%d%H%M)
           agvtool new-version -all "$BUILD_NUMBER"
+          agvtool new-marketing-version "$APP_VERSION"
 
       - name: Preparar keychain de assinatura
         script: keychain initialize
