@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
 import { conteudoApi, perfilApi } from "../api"
 
-interface Noticia { idNoticia: number; titulo: string; subtitulo?: string; imagemUrl?: string; publicadoEm?: string }
+interface Noticia { idNoticia: number; titulo: string; subtitulo?: string; imagemUrl?: string; publicadoEm?: string; dataEvento?: string | null }
 
 function toUtc(s: string) {
   return s.endsWith("Z") || s.includes("+") ? s : s + "Z"
@@ -12,6 +12,13 @@ function toUtc(s: string) {
 
 function fmt(s?: string) {
   return s ? new Date(toUtc(s)).toLocaleDateString("pt-BR", { day: "2-digit", month: "long" }) : ""
+}
+
+// Prioriza a data do evento anunciado (se preenchida) sobre a data de publicação do post,
+// evitando confundir o usuário sobre quando o evento do banner realmente acontece.
+function fmtNoticia(n: Noticia) {
+  if (n.dataEvento) return new Date(n.dataEvento + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })
+  return fmt(n.publicadoEm)
 }
 
 const quickActions = [
@@ -100,9 +107,9 @@ export default function Home() {
           >
             <img src={destaque.imagemUrl!} className="w-full h-full object-cover opacity-90" />
             <div className="absolute inset-0 bg-gradient-to-t from-gray-950/90 via-gray-950/20 to-transparent" />
-            {destaque.publicadoEm && (
+            {(destaque.dataEvento || destaque.publicadoEm) && (
               <span className="absolute top-4 left-4 bg-white/15 backdrop-blur-sm text-white text-[10px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full">
-                {fmt(destaque.publicadoEm)}
+                {fmtNoticia(destaque)}
               </span>
             )}
             <div className="absolute bottom-0 left-0 right-0 p-4 text-left">
@@ -154,7 +161,7 @@ export default function Home() {
             {semImagem.map(n => (
               <button key={n.idNoticia} onClick={() => navigate(`/noticia/${n.idNoticia}`)}
                 className="w-full bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-700 text-left block">
-                <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{fmt(n.publicadoEm)}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{fmtNoticia(n)}</p>
                 <p className="font-bold text-gray-900 dark:text-gray-100 text-sm line-clamp-2">{n.titulo}</p>
                 {n.subtitulo && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{n.subtitulo}</p>}
               </button>

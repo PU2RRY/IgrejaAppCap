@@ -38,7 +38,11 @@ export default function Noticia() {
       {data?.imagemUrl && <img src={data.imagemUrl} className="w-full h-56 object-cover" />}
       <div className="p-5">
         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">
-          {data?.publicadoEm ? new Date(data.publicadoEm.endsWith("Z") ? data.publicadoEm : data.publicadoEm + "Z").toLocaleDateString("pt-BR", { dateStyle: "long" }) : ""}
+          {data?.dataEvento
+            ? new Date(data.dataEvento + "T00:00:00").toLocaleDateString("pt-BR", { dateStyle: "long" })
+            : data?.publicadoEm
+              ? new Date(data.publicadoEm.endsWith("Z") ? data.publicadoEm : data.publicadoEm + "Z").toLocaleDateString("pt-BR", { dateStyle: "long" })
+              : ""}
         </p>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">{data?.titulo}</h1>
         {data?.subtitulo && <p className="text-gray-500 dark:text-gray-400 italic mb-4">{data.subtitulo}</p>}
